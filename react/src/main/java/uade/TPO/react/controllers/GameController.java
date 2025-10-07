@@ -14,39 +14,45 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import uade.TPO.react.entity.Game;
-import uade.TPO.react.service.GameService; // ← Agregar este import
+import uade.TPO.react.service.GameService; 
+
 
 @RestController
 @RequestMapping("/games")
-@CrossOrigin(origins = "*") 
+@CrossOrigin(origins = "*")
 public class GameController {
 
     @Autowired
     private GameService gameService;
 
+    // Obtener todos los juegos
     @GetMapping
-    public List<Game> getAll() {
-        return gameService.getAll(); // ← Usar instancia, no clase
+    public List<Game> getAllGames() {
+        return gameService.getAll();
     }
 
+    // Obtener un juego por ID
     @GetMapping("/{id}")
-    public Game getById(@PathVariable Long id) {
-        return gameService.getById(id); // ← Usar instancia
+    public Game getGameById(@PathVariable Long id) {
+        return gameService.getById(id);
     }
 
+    // Crear un nuevo juego
     @PostMapping
-    public Game save(@RequestBody Game game) {
-        return gameService.save(game); // ← Usar instancia
+    public Game createGame(@RequestBody Game game) {
+        return gameService.save(game);
     }
 
+    // Actualizar un juego existente
     @PutMapping("/{id}")
-    public Game update(@PathVariable Long id, @RequestBody Game game) {
+    public Game updateGame(@PathVariable Long id, @RequestBody Game game) {
         game.setId(id);
-        return gameService.save(game); // ← Usar instancia
+        return gameService.save(game);
     }
 
+    // Eliminar un juego por ID
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        gameService.delete(id); // ← Usar instancia
+    public void deleteGame(@PathVariable Long id) {
+        gameService.delete(id);
     }
 }

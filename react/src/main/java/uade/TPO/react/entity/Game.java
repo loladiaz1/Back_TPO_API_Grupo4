@@ -7,18 +7,38 @@ import jakarta.persistence.Id;
 
 @Entity
 public class Game {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private Double cost;
-    private String image; 
+    private String image;
+    private String description;
 
-    private boolean hasComments;
-    private boolean hasReviews;
+   /* @ManyToMany
+    @JoinTable(
+        name = "game_game_type",
+        joinColumns = @JoinColumn(name = "game_id"),
+        inverseJoinColumns = @JoinColumn(name = "type_id")
+    )
+    private List<GameType> types; 
 
-    // Getters y Setters
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments; */ 
+
+ 
+    public Game() {
+    }
+
+    public Game(String name, Double cost, String image, String description) {
+        this.name = name;
+        this.cost = cost;
+        this.image = image;
+        this.description = description;
+    }
+
     public Long getId() {
         return id;
     }
@@ -43,27 +63,66 @@ public class Game {
         this.cost = cost;
     }
 
-    public String getImage() {
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /*public String getImage() {
         return image;
     }
 
     public void setImage(String image) {
         this.image = image;
+    }*/
+
+    /*public List<Comment> getComments() {
+        return comments;}
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments; }
+
+    public List<GameType> getTypes() {
+        return types;
     }
 
-    public boolean isHasComments() {
-        return hasComments;
+    public void setTypes(List<GameType> types) {
+        this.types = types;
+    }*/ 
+
+
+    /*
+    // Helpers para Comment (OneToMany)
+    public void addComment(Comment comment) {
+        if (this.comments == null) this.comments = new ArrayList<>();
+        this.comments.add(comment);
+        comment.setGame(this);
     }
 
-    public void setHasComments(boolean hasComments) {
-        this.hasComments = hasComments;
+    public void removeComment(Comment comment) {
+        if (this.comments != null) {
+            this.comments.remove(comment);
+            comment.setGame(null);
+        }
     }
 
-    public boolean isHasReviews() {
-        return hasReviews;
+    // Helpers para GameType (ManyToMany)
+    public void addType(GameType type) {
+        if (this.types == null) this.types = new ArrayList<>();
+        this.types.add(type);
+        if (type.getGames() == null) type.setGames(new ArrayList<>());
+        type.getGames().add(this);
     }
 
-    public void setHasReviews(boolean hasReviews) {
-        this.hasReviews = hasReviews;
+    public void removeType(GameType type) {
+        if (this.types != null) {
+            this.types.remove(type);
+            if (type.getGames() != null) type.getGames().remove(this);
+        }
     }
+    */
+
 }
