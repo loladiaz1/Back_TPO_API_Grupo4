@@ -2,6 +2,9 @@ package uade.TPO.react.entity;
 
 import java.util.List;
 
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,8 +13,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 
+
+
 @Entity
 public class Game {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,14 +25,14 @@ public class Game {
 
     private String name;
     private Double cost;
-    //private String image;
     private String description;
 
-    /*
-    // Campo para almacenar el promedio de calificaciones (reviews) de los usuarios.
-    // Este valor se calculará en base a las reseñas cuando la clase User y Comment estén implementadas.
-    private Double averageReview;
-    */
+    
+    @ElementCollection
+    @CollectionTable(name = "game_images", joinColumns = @JoinColumn(name = "game_id"))
+    @Column(name = "image_url")
+    private List<String> images;
+
 
     @ManyToMany
     @JoinTable(
@@ -36,88 +42,53 @@ public class Game {
     )
     private List<GameType> types; 
 
-    //@OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
-    //private List<Comment> comments;  
+    /*
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;  
+    */
 
 
-
-    public Game() {
-    }
+    public Game() {}
 
     public Game(String name, Double cost, String image, String description) {
         this.name = name;
         this.cost = cost;
-        //this.image = image;
         this.description = description;
     }
 
 
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public Double getCost() { return cost; }
+    public void setCost(Double cost) { this.cost = cost; }
 
-    public Double getCost() {
-        return cost;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setCost(Double cost) {
-        this.cost = cost;
-    }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    /*public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }*/
+    public List<String> getImages() { return images; }
+    public void setImages(List<String> images) { this.images = images; }
 
     /*
-    public Double getAverageReview() {
-        return averageReview;
-    }
-
-    public void setAverageReview(Double averageReview) {
-        this.averageReview = averageReview;
-    }
+    public Double getAverageReview() { return averageReview; }
+    public void setAverageReview(Double averageReview) { this.averageReview = averageReview; }
     */
 
-    /*public List<Comment> getComments() {
-        return comments;
-    }
+    /*
+    public List<Comment> getComments() { return comments; }
+    public void setComments(List<Comment> comments) { this.comments = comments; }
+    */
 
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
-    }*/ 
+    public List<GameType> getTypes() { return types; }
+    public void setTypes(List<GameType> types) { this.types = types; }
 
 
-    public List<GameType> getTypes() {
-        return types;
-    }
 
-    public void setTypes(List<GameType> types) {
-        this.types = types;
-    }
     /*
     // Helpers para Comment (OneToMany)
     public void addComment(Comment comment) {
