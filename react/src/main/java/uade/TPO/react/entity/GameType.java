@@ -1,12 +1,9 @@
 package uade.TPO.react.entity;
 
-import java.util.List;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 
 @Entity
 public class GameType {
@@ -17,9 +14,8 @@ public class GameType {
 
     private String type; // Ej: "Acción", "Aventura", "RPG", etc.
 
-    // Relación ManyToMany con Game
-    @ManyToMany(mappedBy = "types")
-    private List<Game> games;
+    // NO incluimos la relación inversa para evitar el loop infinito
+    // Game tiene la referencia a GameType, pero GameType no tiene referencia a Game
 
     // ---------- Constructores ----------
     public GameType() {
@@ -44,13 +40,5 @@ public class GameType {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public List<Game> getGames() {
-        return games;
-    }
-
-    public void setGames(List<Game> games) {
-        this.games = games;
     }
 }
