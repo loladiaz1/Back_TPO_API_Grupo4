@@ -1,9 +1,14 @@
 package uade.TPO.react.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 public class Game {
@@ -14,10 +19,16 @@ public class Game {
 
     private String name;
     private Double cost;
-    private String image;
+    //private String image;
     private String description;
 
-   /* @ManyToMany
+    /*
+    // Campo para almacenar el promedio de calificaciones (reviews) de los usuarios.
+    // Este valor se calculará en base a las reseñas cuando la clase User y Comment estén implementadas.
+    private Double averageReview;
+    */
+
+    @ManyToMany
     @JoinTable(
         name = "game_game_type",
         joinColumns = @JoinColumn(name = "game_id"),
@@ -25,19 +36,21 @@ public class Game {
     )
     private List<GameType> types; 
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments; */ 
+    //@OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    //private List<Comment> comments;  
 
- 
+
+
     public Game() {
     }
 
     public Game(String name, Double cost, String image, String description) {
         this.name = name;
         this.cost = cost;
-        this.image = image;
+        //this.image = image;
         this.description = description;
     }
+
 
     public Long getId() {
         return id;
@@ -79,11 +92,24 @@ public class Game {
         this.image = image;
     }*/
 
+    /*
+    public Double getAverageReview() {
+        return averageReview;
+    }
+
+    public void setAverageReview(Double averageReview) {
+        this.averageReview = averageReview;
+    }
+    */
+
     /*public List<Comment> getComments() {
-        return comments;}
+        return comments;
+    }
 
     public void setComments(List<Comment> comments) {
-        this.comments = comments; }
+        this.comments = comments;
+    }*/ 
+
 
     public List<GameType> getTypes() {
         return types;
@@ -91,9 +117,7 @@ public class Game {
 
     public void setTypes(List<GameType> types) {
         this.types = types;
-    }*/ 
-
-
+    }
     /*
     // Helpers para Comment (OneToMany)
     public void addComment(Comment comment) {
@@ -124,5 +148,4 @@ public class Game {
         }
     }
     */
-
 }
