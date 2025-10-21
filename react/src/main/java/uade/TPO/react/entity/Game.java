@@ -1,7 +1,9 @@
 package uade.TPO.react.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -12,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 
 
 
@@ -42,10 +45,8 @@ public class Game {
     )
     private List<GameType> types; 
 
-    /*
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments;  
-    */
+    private List<Comment> comments = new ArrayList<>();
 
 
     public Game() {}
@@ -74,22 +75,12 @@ public class Game {
     public List<String> getImages() { return images; }
     public void setImages(List<String> images) { this.images = images; }
 
-    /*
-    public Double getAverageReview() { return averageReview; }
-    public void setAverageReview(Double averageReview) { this.averageReview = averageReview; }
-    */
-
-    /*
     public List<Comment> getComments() { return comments; }
     public void setComments(List<Comment> comments) { this.comments = comments; }
-    */
 
     public List<GameType> getTypes() { return types; }
     public void setTypes(List<GameType> types) { this.types = types; }
 
-
-
-    /*
     // Helpers para Comment (OneToMany)
     public void addComment(Comment comment) {
         if (this.comments == null) this.comments = new ArrayList<>();
@@ -103,20 +94,4 @@ public class Game {
             comment.setGame(null);
         }
     }
-
-    // Helpers para GameType (ManyToMany)
-    public void addType(GameType type) {
-        if (this.types == null) this.types = new ArrayList<>();
-        this.types.add(type);
-        if (type.getGames() == null) type.setGames(new ArrayList<>());
-        type.getGames().add(this);
-    }
-
-    public void removeType(GameType type) {
-        if (this.types != null) {
-            this.types.remove(type);
-            if (type.getGames() != null) type.getGames().remove(this);
-        }
-    }
-    */
 }
