@@ -31,10 +31,7 @@ public class CommunityPostController {
     // Obtener todos los posts (ordenados por fecha)
     @GetMapping
     public List<CommunityPost> getAllPosts(@RequestParam(required = false) String category) {
-        if (category != null && !category.isEmpty()) {
-            return communityPostService.getByCategory(category);
-        }
-        return communityPostService.getAllOrderedByDate();
+        return communityPostService.getAllPosts(category);
     }
 
     // Obtener un post por ID

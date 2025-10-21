@@ -1,6 +1,5 @@
 package uade.TPO.react.controllers;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,9 +81,7 @@ public class CommentController {
     // Obtener estadísticas de comentarios de un juego
     @GetMapping("/game/{gameId}/stats")
     public ResponseEntity<Map<String, Object>> getGameCommentStats(@PathVariable Long gameId) {
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("totalComments", commentService.countByGameId(gameId));
-        stats.put("averageRating", commentService.getAverageRating(gameId));
+        Map<String, Object> stats = commentService.getGameCommentStats(gameId);
         return ResponseEntity.ok(stats);
     }
 }

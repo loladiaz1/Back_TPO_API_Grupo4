@@ -1,8 +1,10 @@
 package uade.TPO.react.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,9 +42,13 @@ public class GameTypeController {
     }
 
     @PutMapping("/{id}")
-    public GameType updateType(@PathVariable Long id, @RequestBody GameType updatedType) {
-        updatedType.setId(id);
-        return gameTypeService.saveType(updatedType);
+    public ResponseEntity<?> updateType(@PathVariable Long id, @RequestBody GameType updatedType) {
+        try {
+            GameType updated = gameTypeService.updateType(id, updatedType);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
