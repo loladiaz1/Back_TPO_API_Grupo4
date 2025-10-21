@@ -93,4 +93,12 @@ public class CommunityPostService {
         
         return communityPostRepository.save(post);
     }
+
+    // Obtener posts con filtro opcional por categoría
+    public List<CommunityPost> getAllPosts(String category) {
+        if (category != null && !category.isEmpty()) {
+            return getByCategory(category);
+        }
+        return getAllOrderedByDate();
+    }
 }

@@ -29,4 +29,21 @@ public class GameTypeService {
     public void deleteType(Long id) {
         gameTypeRepository.deleteById(id);
     }
+
+    public GameType updateType(Long id, GameType updatedType) {
+        GameType existing = gameTypeRepository.findById(id).orElse(null);
+        if (existing == null) {
+            throw new RuntimeException("Tipo de juego no encontrado con ID: " + id);
+        }
+        
+        // Actualizar campos del tipo existente
+        if (updatedType.getName() != null) {
+            existing.setName(updatedType.getName());
+        }
+        if (updatedType.getDescription() != null) {
+            existing.setDescription(updatedType.getDescription());
+        }
+        
+        return gameTypeRepository.save(existing);
+    }
 }
