@@ -1,5 +1,7 @@
 package uade.TPO.react.controllers;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import uade.TPO.react.config.JwtTokenProvider;
 import uade.TPO.react.entity.User;
 import uade.TPO.react.service.UserService;
 
@@ -22,6 +25,8 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     // Registro: espera { name, email, password }
     @PostMapping("/register")
@@ -41,7 +46,8 @@ public class AuthController {
         }
     }
 
-    // Login: espera { email, password }
+
+    // Login: espera { email, password } - devuelve user + token
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body, HttpSession session) {
         String email = body.get("email");
@@ -54,9 +60,15 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
         }
         User user = userOpt.get();
-        session.setAttribute(SESSION_USER_ID, user.getId());
+        session.setAttribute(SESSION_USER_ID, user.getId()); // opcional, por compatibilidad
         user.setPassword(null);
-        return ResponseEntity.ok(user);
+
+        String token = jwtTokenProvider.generateToken(user.getEmail());
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("token", token);
+        resp.put("user", user);
+
+        return ResponseEntity.ok(resp);
     }
 
     // Logout: invalida la sesión
@@ -66,7 +78,15 @@ public class AuthController {
         return ResponseEntity.ok().body("Sesión cerrada");
     }
 
-    // Opcional: obtener usuario logueado
+    // Listar todos los usuarios registrados (sin passwords)
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers() {
+        List<User> users = userService.getAll();
+        users.forEach(u -> u.setPassword(null));
+        return ResponseEntity.ok(users);
+    }
+
+    // Obtener usuario logueado
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpSession session) {
         Object idObj = session.getAttribute(SESSION_USER_ID);
@@ -77,6 +97,16 @@ public class AuthController {
         User user = userOpt.get();
         user.setPassword(null);
         return ResponseEntity.ok(user);
+    }
+
+    // Borrar usuario por id (requiere autenticación)
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        boolean deleted = userService.delete(id);
+        if (!deleted) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+        return ResponseEntity.noContent().build();
     }
 }
 

@@ -1,5 +1,6 @@
 package uade.TPO.react.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,22 @@ public class UserService {
     }
 
     public Optional<User> findById(Long id) {
+
         return userRepository.findById(id);
+    }
+
+    // Obtener todos los usuarios
+    public List<User> getAll() {
+        return userRepository.findAll();
+    }
+
+    // Borrar usuario por id, devuelve true si se borró
+    public boolean delete(Long id) {
+        if (!userRepository.existsById(id)) {
+            return false;
+        }
+        userRepository.deleteById(id);
+        return true;
     }
 }
 
