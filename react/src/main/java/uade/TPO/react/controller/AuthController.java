@@ -1,32 +1,29 @@
-package uade.TPO.react.controllers;
-
-import java.util.Map;
-
-import jakarta.servlet.http.HttpSession;
+package uade.TPO.react.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import uade.TPO.react.dto.AuthResponse;
+import uade.TPO.react.dto.LoginRequest;
+import uade.TPO.react.dto.RegisterRequest;
 import uade.TPO.react.entity.User;
 import uade.TPO.react.service.AuthService;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
 public class AuthController {
-
-    private static final String SESSION_USER_ID = "USER_ID";
 
     @Autowired
     private AuthService authService;
 
-    // Registro: espera { name, email, password }
+    // Registro: espera RegisterRequest { name, email, password }
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
-            User created = authService.register(body);
+            User created = authService.register(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -35,38 +32,12 @@ public class AuthController {
         }
     }
 
-    // Login: espera { email, password }
+    // Login: espera LoginRequest { email, password } y devuelve token JWT
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> body, HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            User user = authService.login(body);
-            session.setAttribute(SESSION_USER_ID, user.getId());
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().equals("Credenciales inválidas")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
-    }
-
-    // Logout: invalida la sesión
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpSession session) {
-        session.invalidate();
-        return ResponseEntity.ok().body("Sesión cerrada");
-    }
-
-    // Opcional: obtener usuario logueado
-    @GetMapping("/me")
-    public ResponseEntity<?> me(HttpSession session) {
-        Object idObj = session.getAttribute(SESSION_USER_ID);
-        if (idObj == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autenticado");
-        
-        try {
-            Long id = (Long) idObj;
-            User user = authService.getCurrentUser(id);
-            return ResponseEntity.ok(user);
+            AuthResponse response = authService.authenticate(request);
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
         }

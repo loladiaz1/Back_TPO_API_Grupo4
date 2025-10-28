@@ -1,12 +1,21 @@
 package uade.TPO.react.service;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import uade.TPO.react.dto.AuthResponse;
+import uade.TPO.react.dto.LoginRequest;
+import uade.TPO.react.dto.RegisterRequest;
 import uade.TPO.react.entity.User;
+import uade.TPO.react.util.JwtUtil;
 
 @Service
 public class AuthService {
@@ -14,47 +23,49 @@ public class AuthService {
     @Autowired
     private UserService userService;
 
-    public User register(Map<String, String> body) {
-        String name = body.get("name");
-        String email = body.get("email");
-        String password = body.get("password");
-        
-        if (name == null || email == null || password == null) {
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    public User register(RegisterRequest request) {
+        if (request.getName() == null || request.getEmail() == null || request.getPassword() == null) {
             throw new IllegalArgumentException("Faltan datos");
         }
         
-        User created = userService.register(name, email, password);
+        User created = userService.register(request.getName(), request.getEmail(), request.getPassword());
         created.setPassword(null);
         return created;
     }
 
-    public User login(Map<String, String> body) {
-        String email = body.get("email");
-        String password = body.get("password");
-        
-        if (email == null || password == null) {
+    public AuthResponse authenticate(LoginRequest request) {
+        if (request.getEmail() == null || request.getPassword() == null) {
             throw new IllegalArgumentException("Faltan datos");
         }
         
-        Optional<User> userOpt = userService.login(email, password);
-        if (userOpt.isEmpty()) {
+        try {
+            // Usar AuthenticationManager de Spring Security
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+            
+            // Si la autenticación es exitosa, obtener el usuario
+            User user = (User) authentication.getPrincipal();
+            
+            // Extraer roles
+            Set<String> roles = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+            
+            // Generar token JWT
+            String token = jwtUtil.generateToken(user.getEmail(), roles);
+            
+            // Retornar respuesta con token
+            return new AuthResponse(token, user.getEmail(), user.getName());
+        } catch (AuthenticationException e) {
             throw new IllegalArgumentException("Credenciales inválidas");
         }
-        
-        User user = userOpt.get();
-        user.setPassword(null);
-        return user;
-    }
-
-    public User getCurrentUser(Long userId) {
-        Optional<User> userOpt = userService.findById(userId);
-        if (userOpt.isEmpty()) {
-            throw new IllegalArgumentException("Usuario no encontrado");
-        }
-        
-        User user = userOpt.get();
-        user.setPassword(null);
-        return user;
     }
 }
 

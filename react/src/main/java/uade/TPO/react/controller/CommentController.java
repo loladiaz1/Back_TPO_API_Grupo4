@@ -1,4 +1,4 @@
-package uade.TPO.react.controllers;
+package uade.TPO.react.controller;
 
 import java.util.List;
 import java.util.Map;

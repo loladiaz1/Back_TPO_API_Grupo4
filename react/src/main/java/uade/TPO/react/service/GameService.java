@@ -42,11 +42,11 @@ public class GameService {
         if (game.getDescription() != null) {
             existing.setDescription(game.getDescription());
         }
-        if (game.getPrice() != null) {
-            existing.setPrice(game.getPrice());
+        if (game.getCost() != null) {
+            existing.setCost(game.getCost());
         }
-        if (game.getGameType() != null) {
-            existing.setGameType(game.getGameType());
+        if (game.getTypes() != null) {
+            existing.setTypes(game.getTypes());
         }
         if (game.getImages() != null) {
             existing.setImages(game.getImages());

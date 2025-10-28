@@ -37,11 +37,8 @@ public class GameTypeService {
         }
         
         // Actualizar campos del tipo existente
-        if (updatedType.getName() != null) {
-            existing.setName(updatedType.getName());
-        }
-        if (updatedType.getDescription() != null) {
-            existing.setDescription(updatedType.getDescription());
+        if (updatedType.getType() != null) {
+            existing.setType(updatedType.getType());
         }
         
         return gameTypeRepository.save(existing);
