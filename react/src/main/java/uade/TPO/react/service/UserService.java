@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import uade.TPO.react.entity.User;
+import uade.TPO.react.exception.ConflictException;
 import uade.TPO.react.repository.UserRepository;
 
 @Service
@@ -21,7 +22,7 @@ public class UserService {
 
     public User register(String name, String email, String rawPassword) {
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new IllegalArgumentException("Email already in use");
+            throw new ConflictException("Email already in use");
         }
         String hashed = passwordEncoder.encode(rawPassword);
         User user = new User(name, email, hashed);

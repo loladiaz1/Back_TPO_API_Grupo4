@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import uade.TPO.react.entity.Game;
+import uade.TPO.react.exception.ResourceNotFoundException;
+import uade.TPO.react.exception.ValidationException;
 import uade.TPO.react.service.GameService;
 
 @RestController
@@ -33,31 +35,25 @@ public class ImageController {
     @PostMapping("/games/{gameId}/images/upload")
     public ResponseEntity<?> uploadImages(
             @PathVariable Long gameId,
-            @RequestParam("files") List<MultipartFile> files) {
+            @RequestParam("files") List<MultipartFile> files) throws IOException {
         
         // Verificar que el juego existe
         Game game = gameService.getById(gameId);
         if (game == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Juego no encontrado con ID: " + gameId);
+            throw new ResourceNotFoundException("Juego no encontrado con ID: " + gameId);
         }
 
         if (files.size() > 5) {
-            return ResponseEntity.badRequest().body("No se pueden subir más de 5 imágenes.");
+            throw new ValidationException("No se pueden subir más de 5 imágenes.");
         }
 
         List<String> imageUrls = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            try {
-                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path filePath = Paths.get(UPLOAD_DIR, filename);
-                Files.write(filePath, file.getBytes());
-                imageUrls.add("/images/" + filename);
-            } catch (IOException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Error al subir las imágenes.");
-            }
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(UPLOAD_DIR, filename);
+            Files.write(filePath, file.getBytes());
+            imageUrls.add("/images/" + filename);
         }
 
         // Agregar las imágenes al juego

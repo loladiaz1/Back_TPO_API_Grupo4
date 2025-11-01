@@ -52,23 +52,15 @@ public class CommunityCommentController {
     // Crear un nuevo comentario para un post
     @PostMapping("/post/{postId}")
     public ResponseEntity<?> createComment(@PathVariable Long postId, @RequestBody CommunityComment comment) {
-        try {
-            CommunityComment created = communityCommentService.create(postId, comment);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        CommunityComment created = communityCommentService.create(postId, comment);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     // Actualizar un comentario
     @PutMapping("/{id}")
     public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody CommunityComment comment) {
-        try {
-            CommunityComment updated = communityCommentService.update(id, comment);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        CommunityComment updated = communityCommentService.update(id, comment);
+        return ResponseEntity.ok(updated);
     }
 
     // Eliminar un comentario

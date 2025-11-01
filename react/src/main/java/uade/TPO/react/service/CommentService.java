@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import uade.TPO.react.entity.Comment;
 import uade.TPO.react.entity.Game;
+import uade.TPO.react.exception.ResourceNotFoundException;
+import uade.TPO.react.exception.ValidationException;
 import uade.TPO.react.repository.CommentRepository;
 import uade.TPO.react.repository.GameRepository;
 
@@ -38,12 +40,12 @@ public class CommentService {
     public Comment create(Long gameId, Comment comment) {
         Game game = gameRepository.findById(gameId).orElse(null);
         if (game == null) {
-            throw new RuntimeException("Juego no encontrado con ID: " + gameId);
+            throw new ResourceNotFoundException("Juego no encontrado con ID: " + gameId);
         }
         
         // Validar rating (debe estar entre 1 y 5)
         if (comment.getRating() < 1 || comment.getRating() > 5) {
-            throw new RuntimeException("El rating debe estar entre 1 y 5");
+            throw new ValidationException("El rating debe estar entre 1 y 5");
         }
         
         comment.setGame(game);
@@ -54,13 +56,13 @@ public class CommentService {
     public Comment update(Long id, Comment updatedComment) {
         Comment existing = commentRepository.findById(id).orElse(null);
         if (existing == null) {
-            throw new RuntimeException("Comentario no encontrado con ID: " + id);
+            throw new ResourceNotFoundException("Comentario no encontrado con ID: " + id);
         }
         
         // Validar rating si se está actualizando
         if (updatedComment.getRating() != null && 
             (updatedComment.getRating() < 1 || updatedComment.getRating() > 5)) {
-            throw new RuntimeException("El rating debe estar entre 1 y 5");
+            throw new ValidationException("El rating debe estar entre 1 y 5");
         }
         
         if (updatedComment.getContent() != null) {

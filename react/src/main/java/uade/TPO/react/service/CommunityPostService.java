@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uade.TPO.react.entity.CommunityPost;
+import uade.TPO.react.exception.ResourceNotFoundException;
 import uade.TPO.react.repository.CommunityPostRepository;
 
 @Service
@@ -48,7 +49,7 @@ public class CommunityPostService {
     public CommunityPost update(Long id, CommunityPost updatedPost) {
         CommunityPost existing = communityPostRepository.findById(id).orElse(null);
         if (existing == null) {
-            throw new RuntimeException("Post no encontrado con ID: " + id);
+            throw new ResourceNotFoundException("Post no encontrado con ID: " + id);
         }
         
         if (updatedPost.getTitle() != null) {
@@ -73,7 +74,7 @@ public class CommunityPostService {
     public CommunityPost addLike(Long id) {
         CommunityPost post = communityPostRepository.findById(id).orElse(null);
         if (post == null) {
-            throw new RuntimeException("Post no encontrado con ID: " + id);
+            throw new ResourceNotFoundException("Post no encontrado con ID: " + id);
         }
         
         post.setLikes(post.getLikes() + 1);
@@ -84,7 +85,7 @@ public class CommunityPostService {
     public CommunityPost removeLike(Long id) {
         CommunityPost post = communityPostRepository.findById(id).orElse(null);
         if (post == null) {
-            throw new RuntimeException("Post no encontrado con ID: " + id);
+            throw new ResourceNotFoundException("Post no encontrado con ID: " + id);
         }
         
         if (post.getLikes() > 0) {

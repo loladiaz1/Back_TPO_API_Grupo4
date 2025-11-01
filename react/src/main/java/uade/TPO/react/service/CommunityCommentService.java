@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import uade.TPO.react.entity.CommunityComment;
 import uade.TPO.react.entity.CommunityPost;
+import uade.TPO.react.exception.ResourceNotFoundException;
 import uade.TPO.react.repository.CommunityCommentRepository;
 import uade.TPO.react.repository.CommunityPostRepository;
 
@@ -38,7 +39,7 @@ public class CommunityCommentService {
     public CommunityComment create(Long postId, CommunityComment comment) {
         CommunityPost post = communityPostRepository.findById(postId).orElse(null);
         if (post == null) {
-            throw new RuntimeException("Post no encontrado con ID: " + postId);
+            throw new ResourceNotFoundException("Post no encontrado con ID: " + postId);
         }
         
         comment.setPost(post);
@@ -49,7 +50,7 @@ public class CommunityCommentService {
     public CommunityComment update(Long id, CommunityComment updatedComment) {
         CommunityComment existing = communityCommentRepository.findById(id).orElse(null);
         if (existing == null) {
-            throw new RuntimeException("Comentario no encontrado con ID: " + id);
+            throw new ResourceNotFoundException("Comentario no encontrado con ID: " + id);
         }
         
         if (updatedComment.getContent() != null) {

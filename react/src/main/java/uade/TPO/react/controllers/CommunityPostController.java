@@ -1,7 +1,6 @@
 package uade.TPO.react.controllers;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -63,12 +62,8 @@ public class CommunityPostController {
     // Actualizar un post
     @PutMapping("/{id}")
     public ResponseEntity<?> updatePost(@PathVariable Long id, @RequestBody CommunityPost post) {
-        try {
-            CommunityPost updated = communityPostService.update(id, post);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        CommunityPost updated = communityPostService.update(id, post);
+        return ResponseEntity.ok(updated);
     }
 
     // Eliminar un post
@@ -81,22 +76,14 @@ public class CommunityPostController {
     // Agregar like a un post
     @PostMapping("/{id}/like")
     public ResponseEntity<?> addLike(@PathVariable Long id) {
-        try {
-            CommunityPost updated = communityPostService.addLike(id);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        CommunityPost updated = communityPostService.addLike(id);
+        return ResponseEntity.ok(updated);
     }
 
     // Quitar like de un post
     @PostMapping("/{id}/unlike")
     public ResponseEntity<?> removeLike(@PathVariable Long id) {
-        try {
-            CommunityPost updated = communityPostService.removeLike(id);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        CommunityPost updated = communityPostService.removeLike(id);
+        return ResponseEntity.ok(updated);
     }
 }

@@ -37,13 +37,9 @@ public class AuthController {
         if (name == null || email == null || password == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Faltan datos");
         }
-        try {
-            User created = userService.register(name, email, password);
-            created.setPassword(null);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-        }
+        User created = userService.register(name, email, password);
+        created.setPassword(null);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
 

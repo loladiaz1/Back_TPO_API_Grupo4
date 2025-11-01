@@ -53,23 +53,15 @@ public class CommentController {
     // Crear un nuevo comentario para un juego
     @PostMapping("/game/{gameId}")
     public ResponseEntity<?> createComment(@PathVariable Long gameId, @RequestBody Comment comment) {
-        try {
-            Comment created = commentService.create(gameId, comment);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        Comment created = commentService.create(gameId, comment);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     // Actualizar un comentario
     @PutMapping("/{id}")
     public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody Comment comment) {
-        try {
-            Comment updated = commentService.update(id, comment);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        Comment updated = commentService.update(id, comment);
+        return ResponseEntity.ok(updated);
     }
 
     // Eliminar un comentario
