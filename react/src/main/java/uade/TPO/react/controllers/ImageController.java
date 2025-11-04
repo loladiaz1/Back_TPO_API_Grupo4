@@ -22,7 +22,7 @@ import uade.TPO.react.entity.Game;
 import uade.TPO.react.service.GameService;
 
 @RestController
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class ImageController {
 
     private static final String UPLOAD_DIR = "src/main/resources/static/images/";

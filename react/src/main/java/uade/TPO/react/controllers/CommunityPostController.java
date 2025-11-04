@@ -22,7 +22,7 @@ import uade.TPO.react.service.CommunityPostService;
 
 @RestController
 @RequestMapping("/community/posts")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class CommunityPostController {
 
     @Autowired

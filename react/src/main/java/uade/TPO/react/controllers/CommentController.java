@@ -22,7 +22,7 @@ import uade.TPO.react.service.CommentService;
 
 @RestController
 @RequestMapping("/comments")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class CommentController {
 
     @Autowired

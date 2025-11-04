@@ -19,7 +19,7 @@ import uade.TPO.react.service.GameService;
 
 @RestController
 @RequestMapping("/games")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class GameController {
 
     @Autowired

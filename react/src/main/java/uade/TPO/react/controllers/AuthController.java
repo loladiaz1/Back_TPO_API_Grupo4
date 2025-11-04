@@ -18,7 +18,7 @@ import uade.TPO.react.service.UserService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class AuthController {
 
     private static final String SESSION_USER_ID = "USER_ID";
