@@ -1,5 +1,7 @@
 package uade.TPO.react.config;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +16,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import uade.TPO.react.filter.JwtFilter;
 import uade.TPO.react.repository.UserRepository;
@@ -51,8 +56,34 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Permitir todos los orígenes (puedes especificar URLs específicas en producción)
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        
+        // Permitir todos los métodos HTTP
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // Permitir todos los headers
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Permitir credenciales (cookies, authorization headers)
+        // Nota: Si usas allowedOrigins("*"), debes poner esto en false
+        configuration.setAllowCredentials(false);
+        
+        // Tiempo que el navegador puede cachear la respuesta preflight
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilitar CORS global
             .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs REST
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sin sesiones (stateless con JWT)
