@@ -1,6 +1,5 @@
-package uade.TPO.react.controllers;
+package uade.TPO.react.controller;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,44 +16,44 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import uade.TPO.react.entity.Comment;
-import uade.TPO.react.service.CommentService;
+import uade.TPO.react.entity.CommunityComment;
+import uade.TPO.react.service.CommunityCommentService;
 
 @RestController
-@RequestMapping("/comments")
+@RequestMapping("/community/comments")
 @CrossOrigin(origins = "*")
-public class CommentController {
+public class CommunityCommentController {
 
     @Autowired
-    private CommentService commentService;
+    private CommunityCommentService communityCommentService;
 
     // Obtener todos los comentarios
     @GetMapping
-    public List<Comment> getAllComments() {
-        return commentService.getAll();
+    public List<CommunityComment> getAllComments() {
+        return communityCommentService.getAll();
     }
 
-    // Obtener comentarios de un juego específico
-    @GetMapping("/game/{gameId}")
-    public List<Comment> getCommentsByGame(@PathVariable Long gameId) {
-        return commentService.getByGameId(gameId);
+    // Obtener comentarios de un post específico
+    @GetMapping("/post/{postId}")
+    public List<CommunityComment> getCommentsByPost(@PathVariable Long postId) {
+        return communityCommentService.getByPostId(postId);
     }
 
     // Obtener un comentario por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Comment> getCommentById(@PathVariable Long id) {
-        Comment comment = commentService.getById(id);
+    public ResponseEntity<CommunityComment> getCommentById(@PathVariable Long id) {
+        CommunityComment comment = communityCommentService.getById(id);
         if (comment == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(comment);
     }
 
-    // Crear un nuevo comentario para un juego
-    @PostMapping("/game/{gameId}")
-    public ResponseEntity<?> createComment(@PathVariable Long gameId, @RequestBody Comment comment) {
+    // Crear un nuevo comentario para un post
+    @PostMapping("/post/{postId}")
+    public ResponseEntity<?> createComment(@PathVariable Long postId, @RequestBody CommunityComment comment) {
         try {
-            Comment created = commentService.create(gameId, comment);
+            CommunityComment created = communityCommentService.create(postId, comment);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -63,9 +62,9 @@ public class CommentController {
 
     // Actualizar un comentario
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody Comment comment) {
+    public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody CommunityComment comment) {
         try {
-            Comment updated = commentService.update(id, comment);
+            CommunityComment updated = communityCommentService.update(id, comment);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -75,16 +74,7 @@ public class CommentController {
     // Eliminar un comentario
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
-        commentService.delete(id);
+        communityCommentService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    // Obtener estadísticas de comentarios de un juego
-    @GetMapping("/game/{gameId}/stats")
-    public ResponseEntity<Map<String, Object>> getGameCommentStats(@PathVariable Long gameId) {
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("totalComments", commentService.countByGameId(gameId));
-        stats.put("averageRating", commentService.getAverageRating(gameId));
-        return ResponseEntity.ok(stats);
     }
 }

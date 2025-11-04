@@ -1,8 +1,10 @@
-package uade.TPO.react.controllers;
+package uade.TPO.react.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,9 +47,13 @@ public class GameController {
 
     // Actualizar un juego existente
     @PutMapping("/{id}")
-    public Game updateGame(@PathVariable Long id, @RequestBody Game game) {
-        game.setId(id);
-        return gameService.save(game);
+    public ResponseEntity<?> updateGame(@PathVariable Long id, @RequestBody Game game) {
+        try {
+            Game updated = gameService.update(id, game);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Eliminar un juego por ID
