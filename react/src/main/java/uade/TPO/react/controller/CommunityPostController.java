@@ -21,7 +21,7 @@ import uade.TPO.react.entity.CommunityPost;
 import uade.TPO.react.service.CommunityPostService;
 
 @RestController
-@RequestMapping("/community/posts")
+@RequestMapping("/api/community-posts")
 @CrossOrigin(origins = "*")
 public class CommunityPostController {
 

@@ -20,7 +20,7 @@ import uade.TPO.react.entity.CommunityComment;
 import uade.TPO.react.service.CommunityCommentService;
 
 @RestController
-@RequestMapping("/community/comments")
+@RequestMapping("/api/community-comments")
 @CrossOrigin(origins = "*")
 public class CommunityCommentController {
 
