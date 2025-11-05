@@ -1,4 +1,4 @@
-package uade.TPO.react.controllers;
+package uade.TPO.react.controller;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import uade.TPO.react.service.GameService;
 
 
 @RestController
-@RequestMapping("/games")
+@RequestMapping("/api/games")
 //@CrossOrigin(origins = "*")
 public class GameController {
 

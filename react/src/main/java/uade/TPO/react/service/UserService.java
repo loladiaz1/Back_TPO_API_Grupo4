@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import uade.TPO.react.entity.Role;
 import uade.TPO.react.entity.User;
 import uade.TPO.react.repository.UserRepository;
 
@@ -25,6 +26,7 @@ public class UserService {
         }
         String hashed = passwordEncoder.encode(rawPassword);
         User user = new User(name, email, hashed);
+        user.setRole(Role.USER); // Asignar rol USER por defecto
         return userRepository.save(user);
     }
 
