@@ -45,6 +45,11 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    // buscar usuario por email
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     // Obtener todos los usuarios
     public List<User> getAll() {
         return userRepository.findAll();

@@ -1,5 +1,6 @@
 package uade.TPO.react.service;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,7 @@ import uade.TPO.react.dto.AuthResponse;
 import uade.TPO.react.dto.LoginRequest;
 import uade.TPO.react.dto.RegisterRequest;
 import uade.TPO.react.entity.User;
+import uade.TPO.react.repository.UserRepository;
 import uade.TPO.react.util.JwtUtil;
 
 @Service
@@ -24,10 +26,14 @@ public class AuthService {
     private UserService userService;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
     private JwtUtil jwtUtil;
+
 
     public User register(RegisterRequest request) {
         if (request.getName() == null || request.getEmail() == null || request.getPassword() == null) {
@@ -66,6 +72,10 @@ public class AuthService {
         } catch (AuthenticationException e) {
             throw new IllegalArgumentException("Credenciales inválidas");
         }
+    }
+
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 }
 
