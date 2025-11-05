@@ -92,9 +92,10 @@ Asegurate de tener instalados:
 ### Ejecución con Docker 🐳
 
 1️⃣ Asegurate de tener MySQL corriendo en tu máquina local con:
-   - Base de datos: `react`
+   - Base de datos: `react_db` *
    - Usuario: `root`
-   - Contraseña: `root`
+   - Contraseña: `12345678` *
+ <br> *Importante: localmente puede ser diferente el nombre de la BD y la contraseña.
 
 2️⃣ Construir la imagen
 ```bash
