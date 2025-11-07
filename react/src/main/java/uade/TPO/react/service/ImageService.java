@@ -17,7 +17,7 @@ import uade.TPO.react.entity.Game;
 @Service
 public class ImageService {
 
-    private static final String UPLOAD_DIR = "src/main/resources/static/images/";
+    private static String UPLOAD_DIR = "src/main/resources/static/images/";
     private static final int MAX_IMAGES = 5;
 
     @Autowired
