@@ -41,8 +41,7 @@ public class GameTypeController {
 
     @PutMapping("/{id}")
     public GameType updateType(@PathVariable Long id, @RequestBody GameType updatedType) {
-        updatedType.setId(id);
-        return gameTypeService.saveType(updatedType);
+        return gameTypeService.updateType(id, updatedType);
     }
 
     @DeleteMapping("/{id}")

@@ -28,22 +28,37 @@ public class CommentService {
 
     // Obtener comentarios por ID de juego
     public List<Comment> getByGameId(Long gameId) {
+        if (gameId == null) {
+            throw new ValidationException("El ID del juego no puede ser nulo");
+        }
         return commentRepository.findByGameId(gameId);
     }
 
     // Obtener un comentario por ID
     public Comment getById(Long id) {
-        return commentRepository.findById(id).orElse(null);
+        if (id == null) {
+            throw new ValidationException("El ID no puede ser nulo");
+        }
+        return commentRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + id));
     }
 
     // Crear un nuevo comentario
     public Comment create(Long gameId, Comment comment) {
-        Game game = gameRepository.findById(gameId).orElse(null);
-        if (game == null) {
-            throw new ResourceNotFoundException("Juego no encontrado con ID: " + gameId);
+        if (gameId == null) {
+            throw new ValidationException("El ID del juego no puede ser nulo");
+        }
+        if (comment == null) {
+            throw new ValidationException("El comentario no puede ser nulo");
         }
         
+        Game game = gameRepository.findById(gameId)
+            .orElseThrow(() -> new ResourceNotFoundException("Juego no encontrado con ID: " + gameId));
+        
         // Validar rating (debe estar entre 1 y 5)
+        if (comment.getRating() == null) {
+            throw new ValidationException("El rating es obligatorio");
+        }
         if (comment.getRating() < 1 || comment.getRating() > 5) {
             throw new ValidationException("El rating debe estar entre 1 y 5");
         }
@@ -54,10 +69,15 @@ public class CommentService {
 
     // Actualizar un comentario
     public Comment update(Long id, Comment updatedComment) {
-        Comment existing = commentRepository.findById(id).orElse(null);
-        if (existing == null) {
-            throw new ResourceNotFoundException("Comentario no encontrado con ID: " + id);
+        if (id == null) {
+            throw new ValidationException("El ID no puede ser nulo");
         }
+        if (updatedComment == null) {
+            throw new ValidationException("El comentario no puede ser nulo");
+        }
+        
+        Comment existing = commentRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + id));
         
         // Validar rating si se está actualizando
         if (updatedComment.getRating() != null && 
@@ -77,11 +97,20 @@ public class CommentService {
 
     // Eliminar un comentario
     public void delete(Long id) {
+        if (id == null) {
+            throw new ValidationException("El ID no puede ser nulo");
+        }
+        if (!commentRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Comentario no encontrado con ID: " + id);
+        }
         commentRepository.deleteById(id);
     }
 
     // Calcular promedio de calificaciones de un juego
     public Double getAverageRating(Long gameId) {
+        if (gameId == null) {
+            throw new ValidationException("El ID del juego no puede ser nulo");
+        }
         List<Comment> comments = commentRepository.findByGameId(gameId);
         if (comments.isEmpty()) {
             return 0.0;
@@ -96,6 +125,9 @@ public class CommentService {
 
     // Contar comentarios de un juego
     public long countByGameId(Long gameId) {
+        if (gameId == null) {
+            throw new ValidationException("El ID del juego no puede ser nulo");
+        }
         return commentRepository.countByGameId(gameId);
     }
 }

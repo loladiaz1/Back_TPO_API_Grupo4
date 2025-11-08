@@ -46,8 +46,7 @@ public class GameController {
     // Actualizar un juego existente
     @PutMapping("/{id}")
     public Game updateGame(@PathVariable Long id, @RequestBody Game game) {
-        game.setId(id);
-        return gameService.save(game);
+        return gameService.update(id, game);
     }
 
     // Eliminar un juego por ID

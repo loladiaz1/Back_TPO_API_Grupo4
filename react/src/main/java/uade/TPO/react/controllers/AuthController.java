@@ -34,9 +34,6 @@ public class AuthController {
         String name = body.get("name");
         String email = body.get("email");
         String password = body.get("password");
-        if (name == null || email == null || password == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Faltan datos");
-        }
         User created = userService.register(name, email, password);
         created.setPassword(null);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -56,7 +53,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
         }
         User user = userOpt.get();
-        session.setAttribute(SESSION_USER_ID, user.getId()); // opcional, por compatibilidad
+        session.setAttribute(SESSION_USER_ID, user.getId());
         user.setPassword(null);
 
         String token = jwtTokenProvider.generateToken(user.getEmail());
@@ -98,10 +95,7 @@ public class AuthController {
     // Borrar usuario por id (requiere autenticación)
     @DeleteMapping("/users/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        boolean deleted = userService.delete(id);
-        if (!deleted) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        }
+        userService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
