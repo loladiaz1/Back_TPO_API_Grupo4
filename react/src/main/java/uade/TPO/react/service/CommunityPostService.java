@@ -37,11 +37,17 @@ public class CommunityPostService {
 
     // Obtener posts por categoría
     public List<CommunityPost> getByCategory(String category) {
+        if (category == null || category.trim().isEmpty()) {
+            throw new ValidationException("La categoría no puede ser nula o vacía");
+        }
         return communityPostRepository.findByCategory(category);
     }
 
     // Obtener posts por autor
     public List<CommunityPost> getByAuthor(String authorName) {
+        if (authorName == null || authorName.trim().isEmpty()) {
+            throw new ValidationException("El nombre del autor no puede ser nulo o vacío");
+        }
         return communityPostRepository.findByAuthorName(authorName);
     }
 
@@ -120,5 +126,13 @@ public class CommunityPostService {
         }
         
         return communityPostRepository.save(post);
+    }
+
+    // Obtener posts con filtro opcional por categoría
+    public List<CommunityPost> getAllPosts(String category) {
+        if (category != null && !category.isEmpty()) {
+            return getByCategory(category);
+        }
+        return getAllOrderedByDate();
     }
 }

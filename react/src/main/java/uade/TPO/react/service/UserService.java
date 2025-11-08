@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import uade.TPO.react.entity.Role;
 import uade.TPO.react.entity.User;
 import uade.TPO.react.exception.ConflictException;
 import uade.TPO.react.exception.ResourceNotFoundException;
@@ -40,10 +41,17 @@ public class UserService {
         }
         String hashed = passwordEncoder.encode(rawPassword);
         User user = new User(name, email, hashed);
+        user.setRole(Role.USER); // Asignar rol USER por defecto
         return userRepository.save(user);
     }
 
     public Optional<User> login(String email, String rawPassword) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new ValidationException("El email no puede ser nulo o vacío");
+        }
+        if (rawPassword == null || rawPassword.trim().isEmpty()) {
+            throw new ValidationException("La contraseña no puede ser nula o vacía");
+        }
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) return Optional.empty();
         User user = userOpt.get();
@@ -54,8 +62,18 @@ public class UserService {
     }
 
     public Optional<User> findById(Long id) {
-
+        if (id == null) {
+            throw new ValidationException("El ID no puede ser nulo");
+        }
         return userRepository.findById(id);
+    }
+
+    // buscar usuario por email
+    public Optional<User> findByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new ValidationException("El email no puede ser nulo o vacío");
+        }
+        return userRepository.findByEmail(email);
     }
 
     // Obtener todos los usuarios

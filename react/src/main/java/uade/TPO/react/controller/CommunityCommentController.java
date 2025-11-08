@@ -19,7 +19,7 @@ import uade.TPO.react.service.CommunityCommentService;
 
 @RestController
 @RequestMapping("/community/comments")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class CommunityCommentController {
 
     @Autowired

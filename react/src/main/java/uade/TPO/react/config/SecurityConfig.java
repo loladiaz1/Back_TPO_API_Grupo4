@@ -1,52 +1,124 @@
 package uade.TPO.react.config;
 
+import java.util.Arrays;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import uade.TPO.react.filter.JwtFilter;
+import uade.TPO.react.repository.UserRepository;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JwtFilter jwtFilter;
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenProvider provider) {
-        return new JwtAuthenticationFilter(provider);
+    public UserDetailsService userDetailsService() {
+        return username -> userRepository.findByEmail(username)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + username));
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+    public AuthenticationManager authenticationManager(
+            UserDetailsService userDetailsService,
+            BCryptPasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+
+        return new ProviderManager(authenticationProvider);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Permitir todos los orígenes (puedes especificar URLs específicas en producción)
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5174", "http://localhost:8080")); //puertos del front, se pueden agregar mas
+
+        // Permitir todos los métodos HTTP
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // Permitir todos los headers
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+
+        // Permitir credenciales (cookies, authorization headers)
+        // Nota: Si usas allowedOrigins("*"), debes poner esto en false
+        configuration.setAllowCredentials(false);
+
+        // Tiempo que el navegador puede cachear la respuesta preflight
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.DELETE, "/auth/users/**").authenticated() // Protege el borrado de usuarios
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/games/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/games/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/games/**").authenticated()
-                        .anyRequest().permitAll()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilitar CORS global
+                .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs REST
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sin sesiones (stateless con JWT)
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(auth -> auth
+                        // Endpoints públicos
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/gametypes/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/community-posts/**").permitAll()
+
+                        // Endpoints para administradores (si decides crearlos)
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // Endpoints que requieren autenticación (POST, PUT, DELETE)
+                        .requestMatchers(HttpMethod.DELETE, "/auth/users/**").authenticated()
+
+                        .requestMatchers(HttpMethod.POST, "/api/games/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/games/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/games/**").authenticated()
+
+                        .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/comments/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/comments/**").authenticated()
+
+                        .requestMatchers(HttpMethod.POST, "/api/community-posts/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/community-posts/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/community-posts/**").authenticated()
+
+                        // Cualquier otra petición requiere autenticación
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // Agregar filtro JWT
 
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
-        return cfg.getAuthenticationManager();
     }
 }

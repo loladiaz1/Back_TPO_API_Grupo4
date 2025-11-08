@@ -1,6 +1,8 @@
 package uade.TPO.react.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -129,5 +131,13 @@ public class CommentService {
             throw new ValidationException("El ID del juego no puede ser nulo");
         }
         return commentRepository.countByGameId(gameId);
+    }
+
+    // Obtener estadísticas de comentarios de un juego
+    public Map<String, Object> getGameCommentStats(Long gameId) {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalComments", countByGameId(gameId));
+        stats.put("averageRating", getAverageRating(gameId));
+        return stats;
     }
 }
