@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,40 +39,25 @@ public class CommunityCommentController {
 
     // Obtener un comentario por ID
     @GetMapping("/{id}")
-    public ResponseEntity<CommunityComment> getCommentById(@PathVariable Long id) {
-        CommunityComment comment = communityCommentService.getById(id);
-        if (comment == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(comment);
+    public CommunityComment getCommentById(@PathVariable Long id) {
+        return communityCommentService.getById(id);
     }
 
     // Crear un nuevo comentario para un post
     @PostMapping("/post/{postId}")
-    public ResponseEntity<?> createComment(@PathVariable Long postId, @RequestBody CommunityComment comment) {
-        try {
-            CommunityComment created = communityCommentService.create(postId, comment);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public CommunityComment createComment(@PathVariable Long postId, @RequestBody CommunityComment comment) {
+        return communityCommentService.create(postId, comment);
     }
 
     // Actualizar un comentario
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody CommunityComment comment) {
-        try {
-            CommunityComment updated = communityCommentService.update(id, comment);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public CommunityComment updateComment(@PathVariable Long id, @RequestBody CommunityComment comment) {
+        return communityCommentService.update(id, comment);
     }
 
     // Eliminar un comentario
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
+    public void deleteComment(@PathVariable Long id) {
         communityCommentService.delete(id);
-        return ResponseEntity.noContent().build();
     }
 }

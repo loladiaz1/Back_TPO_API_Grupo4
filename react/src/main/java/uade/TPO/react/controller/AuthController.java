@@ -33,25 +33,15 @@ public class AuthController {
     // Registro: espera RegisterRequest { name, email, password }
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        try {
-            User created = authService.register(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-        }
+        User created = authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     // Login: espera LoginRequest { email, password } y devuelve token JWT
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            AuthResponse response = authService.authenticate(request);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
-        }
+        AuthResponse response = authService.authenticate(request);
+        return ResponseEntity.ok(response);
     }
 
     // Logout (opcional con JWT)
@@ -91,10 +81,7 @@ public class AuthController {
     // Borrar usuario por id (requiere autenticación)
     @DeleteMapping("/users/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        boolean deleted = userService.delete(id);
-        if (!deleted) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        }
+        userService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -25,14 +25,7 @@ public class ImageController {
     public ResponseEntity<?> uploadImages(
             @PathVariable Long gameId,
             @RequestParam("files") List<MultipartFile> files) {
-        
-        try {
-            List<String> imageUrls = imageService.uploadImages(gameId, files);
-            return ResponseEntity.ok(imageUrls);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
-        }
+        List<String> imageUrls = imageService.uploadImages(gameId, files);
+        return ResponseEntity.ok(imageUrls);
     }
 }

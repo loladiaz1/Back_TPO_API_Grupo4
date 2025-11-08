@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import uade.TPO.react.entity.Game;
+import uade.TPO.react.exception.ValidationException;
 
 @Service
 public class ImageService {
@@ -24,27 +25,46 @@ public class ImageService {
     private GameService gameService;
 
     public List<String> uploadImages(Long gameId, List<MultipartFile> files) {
-        // Verificar que el juego existe
-        Game game = gameService.getById(gameId);
-        if (game == null) {
-            throw new IllegalArgumentException("Juego no encontrado con ID: " + gameId);
+        if (gameId == null) {
+            throw new ValidationException("El ID del juego no puede ser nulo");
+        }
+        if (files == null || files.isEmpty()) {
+            throw new ValidationException("Debe proporcionar al menos una imagen");
         }
 
+        // Verificar que el juego existe (getById ya lanza ResourceNotFoundException si no existe)
+        Game game = gameService.getById(gameId);
+
         if (files.size() > MAX_IMAGES) {
-            throw new IllegalArgumentException("No se pueden subir más de " + MAX_IMAGES + " imágenes.");
+            throw new ValidationException("No se pueden subir más de " + MAX_IMAGES + " imágenes");
         }
 
         List<String> imageUrls = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            try {
-                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path filePath = Paths.get(UPLOAD_DIR, filename);
-                Files.write(filePath, file.getBytes());
-                imageUrls.add("/images/" + filename);
-            } catch (IOException e) {
-                throw new RuntimeException("Error al subir las imágenes: " + e.getMessage());
+            if (file.isEmpty()) {
+                throw new ValidationException("No se pueden subir archivos vacíos");
             }
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(UPLOAD_DIR, filename);
+            
+            // Crear directorio si no existe
+            Path uploadPath = Paths.get(UPLOAD_DIR);
+            if (!Files.exists(uploadPath)) {
+                try {
+                    Files.createDirectories(uploadPath);
+                } catch (IOException e) {
+                    throw new ValidationException("Error al crear el directorio de imágenes: " + e.getMessage());
+                }
+            }
+            
+            // Escribir el archivo - IOException se propagará y será manejada por GlobalExceptionHandler
+            try {
+                Files.write(filePath, file.getBytes());
+            } catch (IOException e) {
+                throw new ValidationException("Error al subir la imagen " + file.getOriginalFilename() + ": " + e.getMessage());
+            }
+            imageUrls.add("/images/" + filename);
         }
 
         // Agregar las imágenes al juego
