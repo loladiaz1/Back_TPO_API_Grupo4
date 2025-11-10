@@ -1,16 +1,18 @@
 package uade.TPO.react.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import uade.TPO.react.entity.CommunityComment;
-import uade.TPO.react.entity.CommunityPost;
+import uade.TPO.react.dto.CommunityCommentDTO;
 import uade.TPO.react.exception.ResourceNotFoundException;
 import uade.TPO.react.exception.ValidationException;
 import uade.TPO.react.repository.CommunityCommentRepository;
 import uade.TPO.react.repository.CommunityPostRepository;
+import uade.TPO.react.entity.CommunityComment;
+import uade.TPO.react.entity.CommunityPost;
 
 @Service
 public class CommunityCommentService {
@@ -22,48 +24,58 @@ public class CommunityCommentService {
     private CommunityPostRepository communityPostRepository;
 
     // Obtener todos los comentarios
-    public List<CommunityComment> getAll() {
-        return communityCommentRepository.findAll();
+    public List<CommunityCommentDTO> getAll() {
+        return communityCommentRepository.findAll().stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
     }
 
     // Obtener comentarios por ID de post
-    public List<CommunityComment> getByPostId(Long postId) {
+    public List<CommunityCommentDTO> getByPostId(Long postId) {
         if (postId == null) {
             throw new ValidationException("El ID del post no puede ser nulo");
         }
-        return communityCommentRepository.findByPostId(postId);
+        return communityCommentRepository.findByPostId(postId).stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
     }
 
     // Obtener un comentario por ID
-    public CommunityComment getById(Long id) {
+    public CommunityCommentDTO getById(Long id) {
         if (id == null) {
             throw new ValidationException("El ID no puede ser nulo");
         }
-        return communityCommentRepository.findById(id)
+        CommunityComment comment = communityCommentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + id));
+        return toDto(comment);
     }
 
     // Crear un nuevo comentario
-    public CommunityComment create(Long postId, CommunityComment comment) {
+    public CommunityCommentDTO create(Long postId, CommunityCommentDTO commentDto) {
         if (postId == null) {
             throw new ValidationException("El ID del post no puede ser nulo");
         }
-        if (comment == null) {
+        if (commentDto == null) {
             throw new ValidationException("El comentario no puede ser nulo");
         }
-        if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
+        if (commentDto.getContent() == null || commentDto.getContent().trim().isEmpty()) {
             throw new ValidationException("El contenido del comentario es obligatorio");
         }
         
         CommunityPost post = communityPostRepository.findById(postId)
             .orElseThrow(() -> new ResourceNotFoundException("Post no encontrado con ID: " + postId));
         
+        CommunityComment comment = new CommunityComment();
         comment.setPost(post);
-        return communityCommentRepository.save(comment);
+        comment.setUserName(commentDto.getUserName());
+        comment.setContent(commentDto.getContent());
+
+        CommunityComment saved = communityCommentRepository.save(comment);
+        return toDto(saved);
     }
 
     // Actualizar un comentario
-    public CommunityComment update(Long id, CommunityComment updatedComment) {
+    public CommunityCommentDTO update(Long id, CommunityCommentDTO updatedComment) {
         if (id == null) {
             throw new ValidationException("El ID no puede ser nulo");
         }
@@ -81,7 +93,8 @@ public class CommunityCommentService {
             existing.setContent(updatedComment.getContent());
         }
         
-        return communityCommentRepository.save(existing);
+        CommunityComment saved = communityCommentRepository.save(existing);
+        return toDto(saved);
     }
 
     // Eliminar un comentario
@@ -93,5 +106,18 @@ public class CommunityCommentService {
             throw new ResourceNotFoundException("Comentario no encontrado con ID: " + id);
         }
         communityCommentRepository.deleteById(id);
+    }
+
+    private CommunityCommentDTO toDto(CommunityComment comment) {
+        if (comment == null) {
+            return null;
+        }
+        CommunityCommentDTO dto = new CommunityCommentDTO();
+        dto.setId(comment.getId());
+        dto.setPostId(comment.getPost() != null ? comment.getPost().getId() : null);
+        dto.setUserName(comment.getUserName());
+        dto.setContent(comment.getContent());
+        dto.setCreatedAt(comment.getCreatedAt());
+        return dto;
     }
 }

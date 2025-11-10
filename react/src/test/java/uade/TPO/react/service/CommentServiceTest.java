@@ -17,8 +17,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import uade.TPO.react.dto.CommentDTO;
 import uade.TPO.react.entity.Comment;
 import uade.TPO.react.entity.Game;
+import uade.TPO.react.exception.ResourceNotFoundException;
+import uade.TPO.react.exception.ValidationException;
 import uade.TPO.react.repository.CommentRepository;
 import uade.TPO.react.repository.GameRepository;
 
@@ -53,7 +56,7 @@ public class CommentServiceTest {
     @Test
     void testGetAll() {
         when(commentRepository.findAll()).thenReturn(Arrays.asList(comment1, comment2));
-        List<Comment> result = commentService.getAll();
+        List<CommentDTO> result = commentService.getAll();
         assertEquals(2, result.size());
         verify(commentRepository).findAll();
     }
@@ -61,7 +64,7 @@ public class CommentServiceTest {
     @Test
     void testGetByGameId() {
         when(commentRepository.findByGameId(10L)).thenReturn(Arrays.asList(comment1));
-        List<Comment> result = commentService.getByGameId(10L);
+        List<CommentDTO> result = commentService.getByGameId(10L);
         assertEquals(1, result.size());
         assertEquals("user1", result.get(0).getUserName());
     }
@@ -69,15 +72,16 @@ public class CommentServiceTest {
     @Test
     void testGetByIdFound() {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment1));
-        Comment res = commentService.getById(1L);
+        CommentDTO res = commentService.getById(1L);
         assertNotNull(res);
         assertEquals(1L, res.getId());
+        assertEquals(10L, res.getGameId());
     }
 
     @Test
     void testGetByIdNotFound() {
         when(commentRepository.findById(99L)).thenReturn(Optional.empty());
-        assertNull(commentService.getById(99L));
+        assertThrows(ResourceNotFoundException.class, () -> commentService.getById(99L));
     }
 
     @Test
@@ -90,12 +94,12 @@ public class CommentServiceTest {
             return c;
         });
 
-        Comment toCreate = new Comment();
+        CommentDTO toCreate = new CommentDTO();
         toCreate.setContent("nuevo");
         toCreate.setRating(5);
         toCreate.setUserName("u");
 
-        Comment created = commentService.create(10L, toCreate);
+        CommentDTO created = commentService.create(10L, toCreate);
         verify(gameRepository).findById(10L);
         verify(commentRepository).save(captor.capture());
         assertEquals(5L, created.getId());
@@ -105,18 +109,18 @@ public class CommentServiceTest {
     @Test
     void testCreateGameNotFound() {
         when(gameRepository.findById(999L)).thenReturn(Optional.empty());
-        Comment c = new Comment();
+        CommentDTO c = new CommentDTO();
         c.setRating(3);
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> commentService.create(999L, c));
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> commentService.create(999L, c));
         assertTrue(ex.getMessage().contains("Juego no encontrado"));
     }
 
     @Test
     void testCreateInvalidRating() {
         when(gameRepository.findById(10L)).thenReturn(Optional.of(game));
-        Comment c = new Comment();
+        CommentDTO c = new CommentDTO();
         c.setRating(0);
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> commentService.create(10L, c));
+        ValidationException ex = assertThrows(ValidationException.class, () -> commentService.create(10L, c));
         assertTrue(ex.getMessage().contains("rating"));
     }
 
@@ -125,11 +129,11 @@ public class CommentServiceTest {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment1));
         when(commentRepository.save(any(Comment.class))).thenAnswer(i -> i.getArgument(0));
 
-        Comment updated = new Comment();
+        CommentDTO updated = new CommentDTO();
         updated.setContent("modificado");
         updated.setRating(5);
 
-        Comment res = commentService.update(1L, updated);
+        CommentDTO res = commentService.update(1L, updated);
         assertEquals("modificado", res.getContent());
         assertEquals(5, res.getRating().intValue());
         verify(commentRepository).save(any(Comment.class));
@@ -138,17 +142,17 @@ public class CommentServiceTest {
     @Test
     void testUpdateNotFound() {
         when(commentRepository.findById(50L)).thenReturn(Optional.empty());
-        Comment updated = new Comment();
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> commentService.update(50L, updated));
+        CommentDTO updated = new CommentDTO();
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> commentService.update(50L, updated));
         assertTrue(ex.getMessage().contains("Comentario no encontrado"));
     }
 
     @Test
     void testUpdateInvalidRating() {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment1));
-        Comment updated = new Comment();
+        CommentDTO updated = new CommentDTO();
         updated.setRating(99);
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> commentService.update(1L, updated));
+        ValidationException ex = assertThrows(ValidationException.class, () -> commentService.update(1L, updated));
         assertTrue(ex.getMessage().contains("rating"));
     }
 

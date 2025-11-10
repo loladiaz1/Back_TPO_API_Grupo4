@@ -1,6 +1,5 @@
 package uade.TPO.react.service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,9 +15,9 @@ import org.springframework.stereotype.Service;
 import uade.TPO.react.dto.AuthResponse;
 import uade.TPO.react.dto.LoginRequest;
 import uade.TPO.react.dto.RegisterRequest;
+import uade.TPO.react.dto.UserDTO;
 import uade.TPO.react.entity.User;
 import uade.TPO.react.exception.ValidationException;
-import uade.TPO.react.repository.UserRepository;
 import uade.TPO.react.util.JwtUtil;
 
 @Service
@@ -28,16 +27,13 @@ public class AuthService {
     private UserService userService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
     private JwtUtil jwtUtil;
 
 
-    public User register(RegisterRequest request) {
+    public UserDTO register(RegisterRequest request) {
         if (request == null) {
             throw new ValidationException("La solicitud no puede ser nula");
         }
@@ -51,9 +47,7 @@ public class AuthService {
             throw new ValidationException("La contraseña es obligatoria");
         }
         
-        User created = userService.register(request.getName(), request.getEmail(), request.getPassword());
-        created.setPassword(null);
-        return created;
+        return userService.register(request.getName(), request.getEmail(), request.getPassword());
     }
 
     public AuthResponse authenticate(LoginRequest request) {
@@ -93,10 +87,6 @@ public class AuthService {
         
         // Retornar respuesta con token
         return new AuthResponse(token, user.getEmail(), user.getName());
-    }
-
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
     }
 }
 

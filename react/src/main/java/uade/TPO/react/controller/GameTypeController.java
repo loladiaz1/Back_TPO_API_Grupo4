@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import uade.TPO.react.entity.GameType;
+import uade.TPO.react.dto.GameTypeDTO;
 import uade.TPO.react.service.GameTypeService;
 
 @RestController
@@ -25,22 +25,22 @@ public class GameTypeController {
     private GameTypeService gameTypeService;
 
     @GetMapping
-    public List<GameType> getAllTypes() {
+    public List<GameTypeDTO> getAllTypes() {
         return gameTypeService.getAllTypes();
     }
 
     @GetMapping("/{id}")
-    public GameType getTypeById(@PathVariable Long id) {
+    public GameTypeDTO getTypeById(@PathVariable Long id) {
         return gameTypeService.getTypeById(id);
     }
 
     @PostMapping
-    public GameType createType(@RequestBody GameType type) {
+    public GameTypeDTO createType(@RequestBody GameTypeDTO type) {
         return gameTypeService.saveType(type);
     }
 
     @PutMapping("/{id}")
-    public GameType updateType(@PathVariable Long id, @RequestBody GameType updatedType) {
+    public GameTypeDTO updateType(@PathVariable Long id, @RequestBody GameTypeDTO updatedType) {
         return gameTypeService.updateType(id, updatedType);
     }
 

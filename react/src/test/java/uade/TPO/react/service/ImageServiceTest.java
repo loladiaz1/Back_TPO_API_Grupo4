@@ -20,7 +20,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
-import uade.TPO.react.entity.Game;
+import uade.TPO.react.dto.GameDTO;
+import uade.TPO.react.exception.ResourceNotFoundException;
+import uade.TPO.react.exception.ValidationException;
 
 @ExtendWith(MockitoExtension.class)
 public class ImageServiceTest {
@@ -34,7 +36,7 @@ public class ImageServiceTest {
     @InjectMocks
     private ImageService imageService;
 
-    private Game game;
+    private GameDTO game;
 
     @BeforeEach
     void setUp() {
@@ -52,7 +54,7 @@ public class ImageServiceTest {
                 throw new RuntimeException("Error configurando directorio temporal en ImageService", e);
             }
 
-            game = new Game();
+            game = new GameDTO();
             game.setId(42L);
             game.setName("Test Game");
 
@@ -101,7 +103,7 @@ public class ImageServiceTest {
         }
 
         verify(gameService).getById(42L);
-        verify(gameService).save(game);
+        verify(gameService).updateImages(eq(42L), anyList());
     }
 
     @Test
@@ -111,17 +113,17 @@ public class ImageServiceTest {
             files.add(mock(MultipartFile.class));
         }
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ValidationException.class, () ->
                 imageService.uploadImages(42L, files)
         );
     }
 
     @Test
     void testUploadImagesGameNotFound() throws Exception {
-        when(gameService.getById(999L)).thenReturn(null);
+        when(gameService.getById(999L)).thenThrow(new ResourceNotFoundException("Juego no encontrado"));
         MultipartFile f1 = mock(MultipartFile.class);
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ResourceNotFoundException.class, () ->
                 imageService.uploadImages(999L, List.of(f1))
         );
     }
@@ -134,7 +136,7 @@ public class ImageServiceTest {
         when(f1.getOriginalFilename()).thenReturn("bad.png");
         when(f1.getBytes()).thenThrow(new IOException("disk error"));
 
-        assertThrows(RuntimeException.class, () ->
+        assertThrows(ValidationException.class, () ->
                 imageService.uploadImages(42L, List.of(f1))
         );
     }

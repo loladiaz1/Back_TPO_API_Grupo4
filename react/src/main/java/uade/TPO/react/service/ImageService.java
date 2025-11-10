@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import uade.TPO.react.entity.Game;
+import uade.TPO.react.dto.GameDTO;
 import uade.TPO.react.exception.ValidationException;
 
 @Service
@@ -33,7 +33,7 @@ public class ImageService {
         }
 
         // Verificar que el juego existe (getById ya lanza ResourceNotFoundException si no existe)
-        Game game = gameService.getById(gameId);
+        GameDTO game = gameService.getById(gameId);
 
         if (files.size() > MAX_IMAGES) {
             throw new ValidationException("No se pueden subir más de " + MAX_IMAGES + " imágenes");
@@ -68,13 +68,13 @@ public class ImageService {
         }
 
         // Agregar las imágenes al juego
-        if (game.getImages() == null) {
-            game.setImages(new ArrayList<>());
+        List<String> updatedImages = new ArrayList<>();
+        if (game.getImages() != null) {
+            updatedImages.addAll(game.getImages());
         }
-        game.getImages().addAll(imageUrls);
+        updatedImages.addAll(imageUrls);
 
-        // Guardar el juego actualizado
-        gameService.save(game);
+        gameService.updateImages(gameId, updatedImages);
 
         return imageUrls;
     }

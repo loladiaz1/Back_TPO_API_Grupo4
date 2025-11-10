@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import uade.TPO.react.entity.CommunityPost;
+import uade.TPO.react.dto.CommunityPostDTO;
 import uade.TPO.react.service.CommunityPostService;
 
 @RestController
@@ -27,7 +27,7 @@ public class CommunityPostController {
 
     // Obtener todos los posts (ordenados por fecha)
     @GetMapping
-    public List<CommunityPost> getAllPosts(@RequestParam(required = false) String category) {
+    public List<CommunityPostDTO> getAllPosts(@RequestParam(required = false) String category) {
         if (category != null && !category.isEmpty()) {
             return communityPostService.getByCategory(category);
         }
@@ -36,25 +36,25 @@ public class CommunityPostController {
 
     // Obtener un post por ID
     @GetMapping("/{id}")
-    public CommunityPost getPostById(@PathVariable Long id) {
+    public CommunityPostDTO getPostById(@PathVariable Long id) {
         return communityPostService.getById(id);
     }
 
     // Obtener posts por autor
     @GetMapping("/author/{authorName}")
-    public List<CommunityPost> getPostsByAuthor(@PathVariable String authorName) {
+    public List<CommunityPostDTO> getPostsByAuthor(@PathVariable String authorName) {
         return communityPostService.getByAuthor(authorName);
     }
 
     // Crear un nuevo post
     @PostMapping
-    public CommunityPost createPost(@RequestBody CommunityPost post) {
+    public CommunityPostDTO createPost(@RequestBody CommunityPostDTO post) {
         return communityPostService.create(post);
     }
 
     // Actualizar un post
     @PutMapping("/{id}")
-    public CommunityPost updatePost(@PathVariable Long id, @RequestBody CommunityPost post) {
+    public CommunityPostDTO updatePost(@PathVariable Long id, @RequestBody CommunityPostDTO post) {
         return communityPostService.update(id, post);
     }
 
@@ -66,13 +66,13 @@ public class CommunityPostController {
 
     // Agregar like a un post
     @PostMapping("/{id}/like")
-    public CommunityPost addLike(@PathVariable Long id) {
+    public CommunityPostDTO addLike(@PathVariable Long id) {
         return communityPostService.addLike(id);
     }
 
     // Quitar like de un post
     @PostMapping("/{id}/unlike")
-    public CommunityPost removeLike(@PathVariable Long id) {
+    public CommunityPostDTO removeLike(@PathVariable Long id) {
         return communityPostService.removeLike(id);
     }
 }

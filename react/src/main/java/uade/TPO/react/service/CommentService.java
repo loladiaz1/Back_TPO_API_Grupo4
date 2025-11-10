@@ -3,16 +3,18 @@ package uade.TPO.react.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import uade.TPO.react.entity.Comment;
-import uade.TPO.react.entity.Game;
+import uade.TPO.react.dto.CommentDTO;
 import uade.TPO.react.exception.ResourceNotFoundException;
 import uade.TPO.react.exception.ValidationException;
 import uade.TPO.react.repository.CommentRepository;
 import uade.TPO.react.repository.GameRepository;
+import uade.TPO.react.entity.Comment;
+import uade.TPO.react.entity.Game;
 
 @Service
 public class CommentService {
@@ -24,33 +26,38 @@ public class CommentService {
     private GameRepository gameRepository;
 
     // Obtener todos los comentarios
-    public List<Comment> getAll() {
-        return commentRepository.findAll();
+    public List<CommentDTO> getAll() {
+        return commentRepository.findAll().stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
     }
 
     // Obtener comentarios por ID de juego
-    public List<Comment> getByGameId(Long gameId) {
+    public List<CommentDTO> getByGameId(Long gameId) {
         if (gameId == null) {
             throw new ValidationException("El ID del juego no puede ser nulo");
         }
-        return commentRepository.findByGameId(gameId);
+        return commentRepository.findByGameId(gameId).stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
     }
 
     // Obtener un comentario por ID
-    public Comment getById(Long id) {
+    public CommentDTO getById(Long id) {
         if (id == null) {
             throw new ValidationException("El ID no puede ser nulo");
         }
-        return commentRepository.findById(id)
+        Comment comment = commentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + id));
+        return toDto(comment);
     }
 
     // Crear un nuevo comentario
-    public Comment create(Long gameId, Comment comment) {
+    public CommentDTO create(Long gameId, CommentDTO commentDto) {
         if (gameId == null) {
             throw new ValidationException("El ID del juego no puede ser nulo");
         }
-        if (comment == null) {
+        if (commentDto == null) {
             throw new ValidationException("El comentario no puede ser nulo");
         }
         
@@ -58,19 +65,25 @@ public class CommentService {
             .orElseThrow(() -> new ResourceNotFoundException("Juego no encontrado con ID: " + gameId));
         
         // Validar rating (debe estar entre 1 y 5)
-        if (comment.getRating() == null) {
+        if (commentDto.getRating() == null) {
             throw new ValidationException("El rating es obligatorio");
         }
-        if (comment.getRating() < 1 || comment.getRating() > 5) {
+        if (commentDto.getRating() < 1 || commentDto.getRating() > 5) {
             throw new ValidationException("El rating debe estar entre 1 y 5");
         }
         
+        Comment comment = new Comment();
         comment.setGame(game);
-        return commentRepository.save(comment);
+        comment.setUserName(commentDto.getUserName());
+        comment.setContent(commentDto.getContent());
+        comment.setRating(commentDto.getRating());
+        
+        Comment saved = commentRepository.save(comment);
+        return toDto(saved);
     }
 
     // Actualizar un comentario
-    public Comment update(Long id, Comment updatedComment) {
+    public CommentDTO update(Long id, CommentDTO updatedComment) {
         if (id == null) {
             throw new ValidationException("El ID no puede ser nulo");
         }
@@ -82,7 +95,7 @@ public class CommentService {
             .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + id));
         
         // Validar rating si se está actualizando
-        if (updatedComment.getRating() != null && 
+        if (updatedComment.getRating() != null &&
             (updatedComment.getRating() < 1 || updatedComment.getRating() > 5)) {
             throw new ValidationException("El rating debe estar entre 1 y 5");
         }
@@ -94,7 +107,8 @@ public class CommentService {
             existing.setRating(updatedComment.getRating());
         }
         
-        return commentRepository.save(existing);
+        Comment saved = commentRepository.save(existing);
+        return toDto(saved);
     }
 
     // Eliminar un comentario
@@ -139,5 +153,19 @@ public class CommentService {
         stats.put("totalComments", countByGameId(gameId));
         stats.put("averageRating", getAverageRating(gameId));
         return stats;
+    }
+
+    private CommentDTO toDto(Comment comment) {
+        if (comment == null) {
+            return null;
+        }
+        CommentDTO dto = new CommentDTO();
+        dto.setId(comment.getId());
+        dto.setGameId(comment.getGame() != null ? comment.getGame().getId() : null);
+        dto.setUserName(comment.getUserName());
+        dto.setContent(comment.getContent());
+        dto.setRating(comment.getRating());
+        dto.setCreatedAt(comment.getCreatedAt());
+        return dto;
     }
 }

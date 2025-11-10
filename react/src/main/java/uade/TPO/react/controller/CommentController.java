@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import uade.TPO.react.entity.Comment;
+import uade.TPO.react.dto.CommentDTO;
 import uade.TPO.react.service.CommentService;
 
 @RestController
@@ -28,31 +28,31 @@ public class CommentController {
 
     // Obtener todos los comentarios
     @GetMapping
-    public List<Comment> getAllComments() {
+    public List<CommentDTO> getAllComments() {
         return commentService.getAll();
     }
 
     // Obtener comentarios de un juego específico
     @GetMapping("/game/{gameId}")
-    public List<Comment> getCommentsByGame(@PathVariable Long gameId) {
+    public List<CommentDTO> getCommentsByGame(@PathVariable Long gameId) {
         return commentService.getByGameId(gameId);
     }
 
     // Obtener un comentario por ID
     @GetMapping("/{id}")
-    public Comment getCommentById(@PathVariable Long id) {
+    public CommentDTO getCommentById(@PathVariable Long id) {
         return commentService.getById(id);
     }
 
     // Crear un nuevo comentario para un juego
     @PostMapping("/game/{gameId}")
-    public Comment createComment(@PathVariable Long gameId, @RequestBody Comment comment) {
+    public CommentDTO createComment(@PathVariable Long gameId, @RequestBody CommentDTO comment) {
         return commentService.create(gameId, comment);
     }
 
     // Actualizar un comentario
     @PutMapping("/{id}")
-    public Comment updateComment(@PathVariable Long id, @RequestBody Comment comment) {
+    public CommentDTO updateComment(@PathVariable Long id, @RequestBody CommentDTO comment) {
         return commentService.update(id, comment);
     }
 
