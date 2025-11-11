@@ -1,6 +1,7 @@
 package uade.TPO.react.config;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -59,20 +60,19 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Permitir todos los orígenes (puedes especificar URLs específicas en producción)
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5174", "http://localhost:8080")); //puertos del front, se pueden agregar mas
+        // ✅ PUNTO 4: QUITAR "http://localhost:8080" - solo frontend origins
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:5174"));
 
-        // Permitir todos los métodos HTTP
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
-        // Permitir todos los headers
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // ✅ PUNTO 2: Cambiar a List.of("*")
+        configuration.setAllowedHeaders(List.of("*"));
 
-        // Permitir credenciales (cookies, authorization headers)
-        // Nota: Si usas allowedOrigins("*"), debes poner esto en false
+        configuration.setExposedHeaders(List.of("Authorization"));
+
+        // ✅ PUNTO 2: Cambiar a false (porque con * + credentials=true es inválido)
         configuration.setAllowCredentials(false);
 
-        // Tiempo que el navegador puede cachear la respuesta preflight
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -83,26 +83,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilitar CORS global
-                .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs REST
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sin sesiones (stateless con JWT)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
+                        // ✅ PUNTO 3: OPTIONS permitAll (ya lo tenías ✅)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/gametypes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/community-posts/**").permitAll()
 
-                        // Endpoints para administradores (si decides crearlos)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Endpoints que requieren autenticación (POST, PUT, DELETE)
-                        .requestMatchers(HttpMethod.DELETE, "/auth/users/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/auth/users/**").authenticated()
 
-                        .requestMatchers(HttpMethod.POST, "/api/games/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/games/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/games/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/games/**").authenticated()
 
@@ -114,10 +114,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/community-posts/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/community-posts/**").authenticated()
 
-                        // Cualquier otra petición requiere autenticación
-                        .anyRequest().authenticated()
+                        // ✅ PUNTO 2: Cambiar de .authenticated() a .permitAll() (SOLO desarrollo)
+                        .anyRequest().permitAll()
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // Agregar filtro JWT
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
