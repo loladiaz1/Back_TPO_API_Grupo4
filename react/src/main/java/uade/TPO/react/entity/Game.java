@@ -33,7 +33,7 @@ public class Game {
     
     @ElementCollection
     @CollectionTable(name = "game_images", joinColumns = @JoinColumn(name = "game_id"))
-    @Column(name = "image_url")
+    @Column(name = "image_url", length = 1000)
     private List<String> images;
 
 
