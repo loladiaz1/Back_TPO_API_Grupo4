@@ -102,9 +102,19 @@ public class GameService {
         if (id == null) {
             throw new ValidationException("El ID no puede ser nulo");
         }
-        if (!gameRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Juego no encontrado con ID: " + id);
+        
+        Game game = gameRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Juego no encontrado con ID: " + id));
+        
+        // Limpiar relaciones ManyToMany manualmente para asegurar eliminación
+        if (game.getTypes() != null) {
+            game.getTypes().clear();
         }
+        
+        // Guardar cambios antes de eliminar
+        gameRepository.save(game);
+        
+        // Ahora eliminar el juego (los comentarios e imágenes se eliminan por cascade)
         gameRepository.deleteById(id);
     }
 

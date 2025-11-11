@@ -37,7 +37,7 @@ public class Game {
     private List<String> images;
 
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
         name = "game_game_type",
         joinColumns = @JoinColumn(name = "game_id"),

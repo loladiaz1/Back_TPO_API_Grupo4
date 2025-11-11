@@ -85,8 +85,11 @@ public class AuthService {
         // Generar token JWT
         String token = jwtUtil.generateToken(user.getEmail(), roles);
         
-        // Retornar respuesta con token
-        return new AuthResponse(token, user.getEmail(), user.getName());
+        // Obtener el rol del usuario (sin el prefijo ROLE_)
+        String userRole = user.getRole() != null ? user.getRole().name() : "USER";
+        
+        // Retornar respuesta con token y rol
+        return new AuthResponse(token, user.getEmail(), user.getName(), userRole);
     }
 }
 
