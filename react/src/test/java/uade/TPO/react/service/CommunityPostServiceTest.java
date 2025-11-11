@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import uade.TPO.react.dto.CommunityPostDTO;
 import uade.TPO.react.entity.CommunityPost;
+import uade.TPO.react.exception.ResourceNotFoundException;
 import uade.TPO.react.repository.CommunityPostRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +49,7 @@ public class CommunityPostServiceTest {
     @Test
     void testGetAll() {
         when(communityPostRepository.findAll()).thenReturn(Arrays.asList(post1, post2));
-        List<CommunityPost> res = communityPostService.getAll();
+        List<CommunityPostDTO> res = communityPostService.getAll();
         assertEquals(2, res.size());
         verify(communityPostRepository).findAll();
     }
@@ -56,15 +57,15 @@ public class CommunityPostServiceTest {
     @Test
     void testGetAllOrderedByDate() {
         when(communityPostRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList(post2, post1));
-        List<CommunityPost> res = communityPostService.getAllOrderedByDate();
+        List<CommunityPostDTO> res = communityPostService.getAllOrderedByDate();
         assertEquals(2, res.size());
-        assertEquals(post2, res.get(0));
+        assertEquals(post2.getId(), res.get(0).getId());
     }
 
     @Test
     void testGetByIdFound() {
         when(communityPostRepository.findById(1L)).thenReturn(Optional.of(post1));
-        CommunityPost res = communityPostService.getById(1L);
+        CommunityPostDTO res = communityPostService.getById(1L);
         assertNotNull(res);
         assertEquals(1L, res.getId());
     }
@@ -72,14 +73,13 @@ public class CommunityPostServiceTest {
     @Test
     void testGetByIdNotFound() {
         when(communityPostRepository.findById(99L)).thenReturn(Optional.empty());
-        CommunityPost res = communityPostService.getById(99L);
-        assertNull(res);
+        assertThrows(ResourceNotFoundException.class, () -> communityPostService.getById(99L));
     }
 
     @Test
     void testGetByCategory() {
         when(communityPostRepository.findByCategory("Discusión")).thenReturn(Arrays.asList(post1));
-        List<CommunityPost> res = communityPostService.getByCategory("Discusión");
+        List<CommunityPostDTO> res = communityPostService.getByCategory("Discusión");
         assertEquals(1, res.size());
         assertEquals("Discusión", res.get(0).getCategory());
     }
@@ -87,7 +87,7 @@ public class CommunityPostServiceTest {
     @Test
     void testGetByAuthor() {
         when(communityPostRepository.findByAuthorName("author2")).thenReturn(Arrays.asList(post2));
-        List<CommunityPost> res = communityPostService.getByAuthor("author2");
+        List<CommunityPostDTO> res = communityPostService.getByAuthor("author2");
         assertEquals(1, res.size());
         assertEquals("author2", res.get(0).getAuthorName());
     }
@@ -101,8 +101,13 @@ public class CommunityPostServiceTest {
             return p;
         });
 
-        CommunityPost toCreate = new CommunityPost("a", "t", "c", "Cat");
-        CommunityPost created = communityPostService.create(toCreate);
+        CommunityPostDTO toCreate = new CommunityPostDTO();
+        toCreate.setAuthorName("a");
+        toCreate.setTitle("t");
+        toCreate.setContent("c");
+        toCreate.setCategory("Cat");
+
+        CommunityPostDTO created = communityPostService.create(toCreate);
         verify(communityPostRepository).save(captor.capture());
         assertEquals(33L, created.getId());
         assertEquals("t", captor.getValue().getTitle());
@@ -113,11 +118,11 @@ public class CommunityPostServiceTest {
         when(communityPostRepository.findById(1L)).thenReturn(Optional.of(post1));
         when(communityPostRepository.save(any(CommunityPost.class))).thenAnswer(i -> i.getArgument(0));
 
-        CommunityPost updated = new CommunityPost();
+        CommunityPostDTO updated = new CommunityPostDTO();
         updated.setTitle("new title");
         updated.setContent("new content");
 
-        CommunityPost res = communityPostService.update(1L, updated);
+        CommunityPostDTO res = communityPostService.update(1L, updated);
         assertEquals("new title", res.getTitle());
         assertEquals("new content", res.getContent());
         verify(communityPostRepository).save(any(CommunityPost.class));
@@ -126,8 +131,8 @@ public class CommunityPostServiceTest {
     @Test
     void testUpdateNotFound() {
         when(communityPostRepository.findById(50L)).thenReturn(Optional.empty());
-        CommunityPost updated = new CommunityPost();
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> communityPostService.update(50L, updated));
+        CommunityPostDTO updated = new CommunityPostDTO();
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> communityPostService.update(50L, updated));
         assertTrue(ex.getMessage().contains("Post no encontrado"));
     }
 
@@ -143,7 +148,7 @@ public class CommunityPostServiceTest {
         when(communityPostRepository.findById(1L)).thenReturn(Optional.of(post1));
         when(communityPostRepository.save(any(CommunityPost.class))).thenAnswer(i -> i.getArgument(0));
 
-        CommunityPost res = communityPostService.addLike(1L);
+        CommunityPostDTO res = communityPostService.addLike(1L);
         assertEquals(3, res.getLikes().intValue());
         verify(communityPostRepository).save(any(CommunityPost.class));
     }
@@ -151,7 +156,7 @@ public class CommunityPostServiceTest {
     @Test
     void testAddLikeNotFound() {
         when(communityPostRepository.findById(99L)).thenReturn(Optional.empty());
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> communityPostService.addLike(99L));
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> communityPostService.addLike(99L));
         assertTrue(ex.getMessage().contains("Post no encontrado"));
     }
 
@@ -160,7 +165,7 @@ public class CommunityPostServiceTest {
         when(communityPostRepository.findById(1L)).thenReturn(Optional.of(post1));
         when(communityPostRepository.save(any(CommunityPost.class))).thenAnswer(i -> i.getArgument(0));
 
-        CommunityPost res = communityPostService.removeLike(1L);
+        CommunityPostDTO res = communityPostService.removeLike(1L);
         assertEquals(1, res.getLikes().intValue());
         verify(communityPostRepository).save(any(CommunityPost.class));
     }
@@ -168,7 +173,7 @@ public class CommunityPostServiceTest {
     @Test
     void testRemoveLikeNotFound() {
         when(communityPostRepository.findById(99L)).thenReturn(Optional.empty());
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> communityPostService.removeLike(99L));
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> communityPostService.removeLike(99L));
         assertTrue(ex.getMessage().contains("Post no encontrado"));
     }
 
@@ -177,7 +182,7 @@ public class CommunityPostServiceTest {
         when(communityPostRepository.findById(2L)).thenReturn(Optional.of(post2));
         when(communityPostRepository.save(any(CommunityPost.class))).thenAnswer(i -> i.getArgument(0));
 
-        CommunityPost res = communityPostService.removeLike(2L);
+        CommunityPostDTO res = communityPostService.removeLike(2L);
         assertEquals(0, res.getLikes().intValue());
         verify(communityPostRepository).save(any(CommunityPost.class));
     }
@@ -185,7 +190,7 @@ public class CommunityPostServiceTest {
     @Test
     void testGetAllPostsWithCategory() {
         when(communityPostRepository.findByCategory("Noticia")).thenReturn(Arrays.asList(post2));
-        List<CommunityPost> res = communityPostService.getAllPosts("Noticia");
+        List<CommunityPostDTO> res = communityPostService.getAllPosts("Noticia");
         assertEquals(1, res.size());
         assertEquals("Noticia", res.get(0).getCategory());
     }
@@ -193,9 +198,9 @@ public class CommunityPostServiceTest {
     @Test
     void testGetAllPostsNoCategory() {
         when(communityPostRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList(post2, post1));
-        List<CommunityPost> res = communityPostService.getAllPosts("");
+        List<CommunityPostDTO> res = communityPostService.getAllPosts("");
         assertEquals(2, res.size());
-        assertEquals(post2, res.get(0));
+        assertEquals(post2.getId(), res.get(0).getId());
     }
 }
 

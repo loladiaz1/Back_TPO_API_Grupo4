@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import uade.TPO.react.entity.Game;
+import uade.TPO.react.dto.GameDTO;
 import uade.TPO.react.service.GameService; 
 
 
@@ -27,25 +27,25 @@ public class GameController {
 
     // Obtener todos los juegos
     @GetMapping
-    public List<Game> getAllGames() {
+    public List<GameDTO> getAllGames() {
         return gameService.getAll();
     }
 
     // Obtener un juego por ID
     @GetMapping("/{id}")
-    public Game getGameById(@PathVariable Long id) {
+    public GameDTO getGameById(@PathVariable Long id) {
         return gameService.getById(id);
     }
 
     // Crear un nuevo juego
     @PostMapping
-    public Game createGame(@RequestBody Game game) {
+    public GameDTO createGame(@RequestBody GameDTO game) {
         return gameService.save(game);
     }
 
     // Actualizar un juego existente
     @PutMapping("/{id}")
-    public Game updateGame(@PathVariable Long id, @RequestBody Game game) {
+    public GameDTO updateGame(@PathVariable Long id, @RequestBody GameDTO game) {
         return gameService.update(id, game);
     }
 

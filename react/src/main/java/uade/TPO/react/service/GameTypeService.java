@@ -1,10 +1,12 @@
 package uade.TPO.react.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import uade.TPO.react.dto.GameTypeDTO;
 import uade.TPO.react.entity.GameType;
 import uade.TPO.react.exception.ResourceNotFoundException;
 import uade.TPO.react.exception.ValidationException;
@@ -17,23 +19,26 @@ public class GameTypeService {
     @Autowired
     private GameTypeRepository gameTypeRepository;
 
-    public List<GameType> getAllTypes() {
-        return gameTypeRepository.findAll();
+    public List<GameTypeDTO> getAllTypes() {
+        return gameTypeRepository.findAll().stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
     }
 
-    public GameType getTypeById(Long id) {
+    public GameTypeDTO getTypeById(Long id) {
         if (id == null) {
             throw new ValidationException("El ID no puede ser nulo");
         }
-        return gameTypeRepository.findById(id)
+        GameType type = gameTypeRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Tipo de juego no encontrado con ID: " + id));
+        return toDto(type);
     }
 
-    public GameType saveType(GameType type) {
-        if (type == null) {
+    public GameTypeDTO saveType(GameTypeDTO typeDto) {
+        if (typeDto == null) {
             throw new ValidationException("El tipo de juego no puede ser nulo");
         }
-        if (type.getType() == null || type.getType().trim().isEmpty()) {
+        if (typeDto.getType() == null || typeDto.getType().trim().isEmpty()) {
             throw new ValidationException("El nombre del tipo de juego es obligatorio");
         }
         
@@ -41,42 +46,47 @@ public class GameTypeService {
         List<GameType> existingTypes = gameTypeRepository.findAll();
         for (GameType existing : existingTypes) {
             if (existing.getType() != null && 
-                existing.getType().equalsIgnoreCase(type.getType()) &&
-                (type.getId() == null || !existing.getId().equals(type.getId()))) {
-                throw new ConflictException("Ya existe un tipo de juego con el nombre: " + type.getType());
+                existing.getType().equalsIgnoreCase(typeDto.getType()) &&
+                (typeDto.getId() == null || !existing.getId().equals(typeDto.getId()))) {
+                throw new ConflictException("Ya existe un tipo de juego con el nombre: " + typeDto.getType());
             }
         }
         
-        return gameTypeRepository.save(type);
+        GameType type = new GameType();
+        type.setType(typeDto.getType());
+        
+        GameType saved = gameTypeRepository.save(type);
+        return toDto(saved);
     }
 
-    public GameType updateType(Long id, GameType type) {
+    public GameTypeDTO updateType(Long id, GameTypeDTO typeDto) {
         if (id == null) {
             throw new ValidationException("El ID no puede ser nulo");
         }
-        if (type == null) {
+        if (typeDto == null) {
             throw new ValidationException("El tipo de juego no puede ser nulo");
         }
         
         GameType existing = gameTypeRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Tipo de juego no encontrado con ID: " + id));
         
-        if (type.getType() != null && !type.getType().trim().isEmpty()) {
+        if (typeDto.getType() != null && !typeDto.getType().trim().isEmpty()) {
             // Verificar si ya existe otro tipo con el mismo nombre
             List<GameType> existingTypes = gameTypeRepository.findAll();
             for (GameType other : existingTypes) {
                 if (other.getType() != null && 
-                    other.getType().equalsIgnoreCase(type.getType()) &&
+                    other.getType().equalsIgnoreCase(typeDto.getType()) &&
                     !other.getId().equals(id)) {
-                    throw new ConflictException("Ya existe un tipo de juego con el nombre: " + type.getType());
+                    throw new ConflictException("Ya existe un tipo de juego con el nombre: " + typeDto.getType());
                 }
             }
-            existing.setType(type.getType());
-        } else if (type.getType() != null && type.getType().trim().isEmpty()) {
+            existing.setType(typeDto.getType());
+        } else if (typeDto.getType() != null && typeDto.getType().trim().isEmpty()) {
             throw new ValidationException("El nombre del tipo de juego no puede estar vacío");
         }
         
-        return gameTypeRepository.save(existing);
+        GameType saved = gameTypeRepository.save(existing);
+        return toDto(saved);
     }
 
     public void deleteType(Long id) {
@@ -87,5 +97,12 @@ public class GameTypeService {
             throw new ResourceNotFoundException("Tipo de juego no encontrado con ID: " + id);
         }
         gameTypeRepository.deleteById(id);
+    }
+
+    private GameTypeDTO toDto(GameType type) {
+        if (type == null) {
+            return null;
+        }
+        return new GameTypeDTO(type.getId(), type.getType());
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import uade.TPO.react.dto.AuthResponse;
 import uade.TPO.react.dto.LoginRequest;
 import uade.TPO.react.dto.RegisterRequest;
-import uade.TPO.react.entity.User;
+import uade.TPO.react.dto.UserDTO;
 import uade.TPO.react.service.AuthService;
 import uade.TPO.react.service.UserService;
 
@@ -33,7 +33,7 @@ public class AuthController {
     // Registro: espera RegisterRequest { name, email, password }
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        User created = authService.register(request);
+        UserDTO created = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -55,8 +55,7 @@ public class AuthController {
     // Listar todos los usuarios registrados (sin passwords)
     @GetMapping("/users")
     public ResponseEntity<?> getAllUsers() {
-        List<User> users = userService.getAll();
-        users.forEach(u -> u.setPassword(null));
+        List<UserDTO> users = userService.getAll();
         return ResponseEntity.ok(users);
     }
 
@@ -68,13 +67,12 @@ public class AuthController {
         }
 
         String email = authentication.getName();
-        Optional<User> userOpt = userService.findByEmail(email);
+        Optional<UserDTO> userOpt = userService.findByEmail(email);
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
         }
 
-        User user = userOpt.get();
-        user.setPassword(null);
+        UserDTO user = userOpt.get();
         return ResponseEntity.ok(user);
     }
 

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,8 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import uade.TPO.react.dto.CommunityCommentDTO;
 import uade.TPO.react.entity.CommunityComment;
 import uade.TPO.react.entity.CommunityPost;
+import uade.TPO.react.exception.ResourceNotFoundException;
 import uade.TPO.react.repository.CommunityCommentRepository;
 import uade.TPO.react.repository.CommunityPostRepository;
 
@@ -51,7 +52,7 @@ public class CommunityCommentServiceTest {
     @Test
     void testGetAll() {
         when(communityCommentRepository.findAll()).thenReturn(Arrays.asList(comment1, comment2));
-        List<CommunityComment> res = communityCommentService.getAll();
+        List<CommunityCommentDTO> res = communityCommentService.getAll();
         assertEquals(2, res.size());
         verify(communityCommentRepository).findAll();
     }
@@ -59,7 +60,7 @@ public class CommunityCommentServiceTest {
     @Test
     void testGetByPostId() {
         when(communityCommentRepository.findByPostId(1L)).thenReturn(Arrays.asList(comment1));
-        List<CommunityComment> res = communityCommentService.getByPostId(1L);
+        List<CommunityCommentDTO> res = communityCommentService.getByPostId(1L);
         assertEquals(1, res.size());
         assertEquals("user1", res.get(0).getUserName());
     }
@@ -67,7 +68,7 @@ public class CommunityCommentServiceTest {
     @Test
     void testGetByIdFound() {
         when(communityCommentRepository.findById(10L)).thenReturn(Optional.of(comment1));
-        CommunityComment res = communityCommentService.getById(10L);
+        CommunityCommentDTO res = communityCommentService.getById(10L);
         assertNotNull(res);
         assertEquals(10L, res.getId());
     }
@@ -75,8 +76,7 @@ public class CommunityCommentServiceTest {
     @Test
     void testGetByIdNotFound() {
         when(communityCommentRepository.findById(99L)).thenReturn(Optional.empty());
-        CommunityComment res = communityCommentService.getById(99L);
-        assertNull(res);
+        assertThrows(ResourceNotFoundException.class, () -> communityCommentService.getById(99L));
     }
 
     @Test
@@ -89,11 +89,11 @@ public class CommunityCommentServiceTest {
             return c;
         });
 
-        CommunityComment toCreate = new CommunityComment();
+        CommunityCommentDTO toCreate = new CommunityCommentDTO();
         toCreate.setUserName("nuevo");
         toCreate.setContent("contenido");
 
-        CommunityComment created = communityCommentService.create(1L, toCreate);
+        CommunityCommentDTO created = communityCommentService.create(1L, toCreate);
         verify(communityPostRepository).findById(1L);
         verify(communityCommentRepository).save(captor.capture());
         assertEquals(55L, created.getId());
@@ -104,7 +104,7 @@ public class CommunityCommentServiceTest {
     @Test
     void testCreatePostNotFound() {
         when(communityPostRepository.findById(999L)).thenReturn(Optional.empty());
-        CommunityComment c = new CommunityComment();
+        CommunityCommentDTO c = new CommunityCommentDTO();
         RuntimeException ex = assertThrows(RuntimeException.class, () -> communityCommentService.create(999L, c));
         assertTrue(ex.getMessage().contains("Post no encontrado"));
     }
@@ -114,10 +114,10 @@ public class CommunityCommentServiceTest {
         when(communityCommentRepository.findById(10L)).thenReturn(Optional.of(comment1));
         when(communityCommentRepository.save(any(CommunityComment.class))).thenAnswer(i -> i.getArgument(0));
 
-        CommunityComment updated = new CommunityComment();
+        CommunityCommentDTO updated = new CommunityCommentDTO();
         updated.setContent("modificado");
 
-        CommunityComment res = communityCommentService.update(10L, updated);
+        CommunityCommentDTO res = communityCommentService.update(10L, updated);
         assertEquals("modificado", res.getContent());
         verify(communityCommentRepository).save(any(CommunityComment.class));
     }
@@ -125,8 +125,8 @@ public class CommunityCommentServiceTest {
     @Test
     void testUpdateNotFound() {
         when(communityCommentRepository.findById(50L)).thenReturn(Optional.empty());
-        CommunityComment updated = new CommunityComment();
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> communityCommentService.update(50L, updated));
+        CommunityCommentDTO updated = new CommunityCommentDTO();
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> communityCommentService.update(50L, updated));
         assertTrue(ex.getMessage().contains("Comentario no encontrado"));
     }
 

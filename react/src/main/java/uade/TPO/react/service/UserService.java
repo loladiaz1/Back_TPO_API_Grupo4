@@ -2,11 +2,13 @@ package uade.TPO.react.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import uade.TPO.react.dto.UserDTO;
 import uade.TPO.react.entity.Role;
 import uade.TPO.react.entity.User;
 import uade.TPO.react.exception.ConflictException;
@@ -23,7 +25,7 @@ public class UserService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    public User register(String name, String email, String rawPassword) {
+    public UserDTO register(String name, String email, String rawPassword) {
         if (name == null || name.trim().isEmpty()) {
             throw new ValidationException("El nombre es obligatorio");
         }
@@ -42,10 +44,11 @@ public class UserService {
         String hashed = passwordEncoder.encode(rawPassword);
         User user = new User(name, email, hashed);
         user.setRole(Role.USER); // Asignar rol USER por defecto
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        return toDto(saved);
     }
 
-    public Optional<User> login(String email, String rawPassword) {
+    public Optional<UserDTO> login(String email, String rawPassword) {
         if (email == null || email.trim().isEmpty()) {
             throw new ValidationException("El email no puede ser nulo o vacío");
         }
@@ -56,29 +59,31 @@ public class UserService {
         if (userOpt.isEmpty()) return Optional.empty();
         User user = userOpt.get();
         if (passwordEncoder.matches(rawPassword, user.getPassword())) {
-            return Optional.of(user);
+            return Optional.of(toDto(user));
         }
         return Optional.empty();
     }
 
-    public Optional<User> findById(Long id) {
+    public Optional<UserDTO> findById(Long id) {
         if (id == null) {
             throw new ValidationException("El ID no puede ser nulo");
         }
-        return userRepository.findById(id);
+        return userRepository.findById(id).map(this::toDto);
     }
 
     // buscar usuario por email
-    public Optional<User> findByEmail(String email) {
+    public Optional<UserDTO> findByEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             throw new ValidationException("El email no puede ser nulo o vacío");
         }
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email).map(this::toDto);
     }
 
     // Obtener todos los usuarios
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public List<UserDTO> getAll() {
+        return userRepository.findAll().stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
     }
 
     // Borrar usuario por id
@@ -90,6 +95,14 @@ public class UserService {
             throw new ResourceNotFoundException("Usuario no encontrado con ID: " + id);
         }
         userRepository.deleteById(id);
+    }
+
+    private UserDTO toDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        String roleName = user.getRole() != null ? user.getRole().name() : null;
+        return new UserDTO(user.getId(), user.getName(), user.getEmail(), roleName);
     }
 }
 
