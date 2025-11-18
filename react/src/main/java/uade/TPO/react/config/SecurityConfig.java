@@ -60,18 +60,20 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ✅ PUNTO 4: QUITAR "http://localhost:8080" - solo frontend origins
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:5174"));
+        //configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:5174", "http://localhost:3000"));
+        //Con docker en el front solo debo permitir el puerto 3000
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-
-        // ✅ PUNTO 2: Cambiar a List.of("*")
+        //permito todos los headers
         configuration.setAllowedHeaders(List.of("*"));
-
         configuration.setExposedHeaders(List.of("Authorization"));
 
-        // ✅ PUNTO 2: Cambiar a false (porque con * + credentials=true es inválido)
-        configuration.setAllowCredentials(false);
+        //Cambia a false (porque con * + credentials=true es inválido)
+        //configuration.setAllowCredentials(false);
+
+        //debe ser TRUE si usás cookies o headers con autorización
+        configuration.setAllowCredentials(true);
 
         configuration.setMaxAge(3600L);
 
@@ -79,6 +81,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -90,7 +93,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        // ✅ PUNTO 3: OPTIONS permitAll (ya lo tenías ✅)
+                        //esta linea es para permitir las peticiones OPTIONS de CORS
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/games/**").permitAll()
@@ -114,7 +117,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/community-posts/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/community-posts/**").authenticated()
 
-                        // ✅ PUNTO 2: Cambiar de .authenticated() a .permitAll() (SOLO desarrollo)
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
